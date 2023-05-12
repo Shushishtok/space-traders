@@ -1,8 +1,8 @@
-import { DefaultApi } from '../../packages/spacetraders-sdk';
+import { DefaultApi } from '../packages/spacetraders-sdk';
 import { createAxiosInstance } from './create-axios-instance';
 import { createConfiguration } from './create-configuration';
 
-async function register() {
+export async function register(symbol: string) {
 	const configuration = createConfiguration(false);
 	const axiosInstance = createAxiosInstance();
 
@@ -10,10 +10,8 @@ async function register() {
 
 	const result = await defaultApi.register({
 		faction: "COSMIC",
-		symbol: "ShushLovesLisa"
+		symbol,
 	});
 
-	console.log(JSON.stringify(result.data.data, undefined, 4));
+	return result.data.data;
 }
-
-register();

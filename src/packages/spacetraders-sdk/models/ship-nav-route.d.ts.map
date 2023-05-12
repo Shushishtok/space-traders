@@ -1,0 +1,1 @@
+{"version":3,"file":"ship-nav-route.d.ts","sourceRoot":"","sources":["ship-nav-route.ts"],"names":[],"mappings":"AAEA;;;;;;;;;;GAUG;AAKH,OAAO,EAAE,oBAAoB,EAAE,MAAM,2BAA2B,CAAC;AAEjE;;;;GAIG;AACH,MAAM,WAAW,YAAY;IACzB;;;;OAIG;IACH,aAAa,EAAE,oBAAoB,CAAC;IACpC;;;;OAIG;IACH,WAAW,EAAE,oBAAoB,CAAC;IAClC;;;;OAIG;IACH,eAAe,EAAE,MAAM,CAAC;IACxB;;;;OAIG;IACH,SAAS,EAAE,MAAM,CAAC;CACrB"}

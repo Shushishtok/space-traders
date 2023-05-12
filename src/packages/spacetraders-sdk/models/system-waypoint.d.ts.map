@@ -1,0 +1,1 @@
+{"version":3,"file":"system-waypoint.d.ts","sourceRoot":"","sources":["system-waypoint.ts"],"names":[],"mappings":"AAEA;;;;;;;;;;GAUG;AAKH,OAAO,EAAE,YAAY,EAAE,MAAM,iBAAiB,CAAC;AAE/C;;;;GAIG;AACH,MAAM,WAAW,cAAc;IAC3B;;;;OAIG;IACH,QAAQ,EAAE,MAAM,CAAC;IACjB;;;;OAIG;IACH,MAAM,EAAE,YAAY,CAAC;IACrB;;;;OAIG;IACH,GAAG,EAAE,MAAM,CAAC;IACZ;;;;OAIG;IACH,GAAG,EAAE,MAAM,CAAC;CACf"}

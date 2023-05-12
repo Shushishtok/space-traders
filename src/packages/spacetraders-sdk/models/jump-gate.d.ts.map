@@ -1,0 +1,1 @@
+{"version":3,"file":"jump-gate.d.ts","sourceRoot":"","sources":["jump-gate.ts"],"names":[],"mappings":"AAEA;;;;;;;;;;GAUG;AAKH,OAAO,EAAE,eAAe,EAAE,MAAM,oBAAoB,CAAC;AAErD;;;;GAIG;AACH,MAAM,WAAW,QAAQ;IACrB;;;;OAIG;IACH,WAAW,EAAE,MAAM,CAAC;IACpB;;;;OAIG;IACH,eAAe,CAAC,EAAE,MAAM,CAAC;IACzB;;;;OAIG;IACH,kBAAkB,EAAE,KAAK,CAAC,eAAe,CAAC,CAAC;CAC9C"}

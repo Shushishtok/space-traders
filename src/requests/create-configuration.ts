@@ -1,4 +1,4 @@
-import { Configuration, ConfigurationParameters } from "../../packages/spacetraders-sdk";
+import { Configuration, ConfigurationParameters } from "../packages/spacetraders-sdk";
 
 export function createConfiguration(includeAccessToken = true) {
 	const configurationOptions: ConfigurationParameters = {
