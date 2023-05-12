@@ -1,10 +1,39 @@
-import express from 'express';
-import { routes } from './routes';
+import express, { NextFunction, Request, Response } from 'express';
+import 'express-async-errors';
+import bodyParser from 'body-parser';
+import { agentRoutes, contractRoutes, defaultRoutes, shipsRoutes, systemRoutes } from './routes';
+import dotenv from 'dotenv';
+import { errorHandler } from './exceptions/error-handler';
+
+dotenv.config();
+
+process.on('unhandledRejection', (reason: Error | any) => {
+	console.log(`Unhandled Rejection: ${reason?.message ?? reason}`);
+  	throw new Error(reason?.message ?? reason);
+});
+
+process.on('uncaughtException', (error: Error) => {
+	console.log(`Uncaught Exception: ${error.message}`);  
+	errorHandler.handleError(error);
+});
 
 const app = express();
 const port = 3000;
 
-app.use('/', routes);
+// Middlewares
+app.use(bodyParser.json());
+
+// Routes
+app.use('/', defaultRoutes);
+app.use('/agent', agentRoutes);
+app.use('/systems', systemRoutes);
+app.use('/ships', shipsRoutes);
+app.use('/contracts', contractRoutes);
+
+// Error handler: must be last!
+app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
+	errorHandler.handleError(error, res);
+});
 
 app.listen(port, () => {
 	console.log(`Server is running in port: ${port}`);
