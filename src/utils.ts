@@ -1,3 +1,4 @@
+import { Response } from "express";
 import { AppError, HttpCode, ErrorNames } from "./exceptions/app-error";
 
 export async function sleep(milliSeconds: number) {
@@ -47,4 +48,8 @@ export async function tryApiRequest<T>(tryFunc: () => T, errorMessage: string) {
 			name: ErrorNames.API_ERROR,
 		});
 	}
+}
+
+export async function sendSuccessResultResponse<T>(response: Response, result: T) {
+	response.status(200).send(result);
 }
