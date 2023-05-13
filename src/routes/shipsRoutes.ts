@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import * as Ships from '../requests/ships';
+import * as CustomRequests from '../requests/custom-requests';
 import { sendSuccessResultResponse, validateMissingParameters } from '../utils';
 import { PaginatedRequest } from "../interfaces/pagination";
-import { ExtractIntoShip, NavigateShip, PurchaseShip, ShipCargoTransaction, ShipSymbol } from '../interfaces/ships';
+import { ExtractIntoShip, NavigateShip, PurchaseShip, ShipCargoTransaction, ShipFullCargoPurchase, ShipSymbol } from '../interfaces/ships';
 
 export const shipsRouter = Router();
 
@@ -88,4 +89,12 @@ shipsRouter.post("/purchase/cargo", async (req, res) => {
 
 	const result = await Ships.purchaseCargo(shipSymbol, { symbol: unitSymbol, units: unitCount });
 	sendSuccessResultResponse(res, result);
+});
+
+shipsRouter.post("/purchase/cargo/full", async (req, res) => {
+	const { shipSymbol, unitSymbol }: ShipFullCargoPurchase = req.body;
+	validateMissingParameters({ shipSymbol, unitSymbol });
+
+	await CustomRequests.purchaseFullCargo(shipSymbol, unitSymbol);
+	sendSuccessResultResponse(res);
 });

@@ -99,7 +99,7 @@ export async function purchaseCargo(shipSymbol: string, purchaseObject: Purchase
 	const shipsApi = getFleetApi();	
 
 	return await tryApiRequest(async () => {
-		const result = await shipsApi.sellCargo(shipSymbol, purchaseObject);
+		const result = await shipsApi.purchaseCargo(shipSymbol, purchaseObject);
 		return result.data;
 	}, "Could not purchase into ship cargo");
 }

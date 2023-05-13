@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import * as Contracts from '../requests/contracts';
+import * as CustomRequests from "../requests/custom-requests";
 import { sendSuccessResultResponse, validateMissingParameters } from '../utils';
 import { PaginatedRequest } from '../interfaces/pagination';
-import { ContractID, DeliverContact } from '../interfaces/contracts';
+import { ContractID, DeliverAllContracts, DeliverContact } from '../interfaces/contracts';
 
 export const contractRouter = Router();
 
@@ -35,4 +36,12 @@ contractRouter.post("/deliver", async (req, res) => {
 
 	const result = await Contracts.deliverContract(contractId, shipSymbol, tradeSymbol, units);
 	sendSuccessResultResponse(res, result);
+});
+
+contractRouter.post("/allDeliveryTerms", async (req, res) => {
+	const { shipSymbol, contractId }: DeliverAllContracts = req.body;
+	validateMissingParameters({ shipSymbol, contractId });
+
+	CustomRequests.deliverGoodsToContract(shipSymbol, contractId);
+	res.status(200).send("Started delivery process, check logs for details");
 });

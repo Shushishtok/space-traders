@@ -7,3 +7,7 @@ export interface DeliverContact extends ContractID {
 	tradeSymbol: string;
 	units: number;
 }
+
+export interface DeliverAllContracts extends ContractID {
+	shipSymbol: string;		
+}

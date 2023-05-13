@@ -19,7 +19,7 @@ class ErrorHandler {
   }
 
   private handleTrustedError(error: AppError, response?: Response): void {
-	if (response) {
+	if (response) {		
 		response.status(error.httpCode).json({ name: error.name, message: error.message });
 	} else {
 		console.log(`An error occurred, error code: ${error.httpCode}, error message: ${error.message}`);
