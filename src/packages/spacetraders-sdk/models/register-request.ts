@@ -32,6 +32,12 @@ export interface RegisterRequest {
      * @memberof RegisterRequest
      */
     'symbol': string;
+    /**
+     * Your email address. This is used if you reserved your call sign between resets.
+     * @type {any}
+     * @memberof RegisterRequest
+     */
+    'email'?: any;
 }
 
 export const RegisterRequestFactionEnum = {
