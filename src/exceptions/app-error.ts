@@ -1,3 +1,5 @@
+import { Logger } from "../logger/logger";
+
 export enum ErrorNames {
 	BAD_PARAMETER = "Bad Parameter",
 	API_ERROR = "API Error",
@@ -19,26 +21,40 @@ interface AppErrorArgs {
 	httpCode: HttpCode;
 	description: string;
 	isOperational?: boolean;
+	avoidPrintingError?: boolean;
   }
   
 export class AppError extends Error {
 	public readonly name: string;
 	public readonly httpCode: HttpCode;
 	public readonly isOperational: boolean = true;
+	public readonly avoidPrintingError: boolean = false;
 
 	constructor(args: AppErrorArgs) {
-		const { description, httpCode, isOperational, name } = args;
-		super(description);
+		super(args.description);
+		const { description, httpCode, isOperational, name, avoidPrintingError } = args;
 
 		Object.setPrototypeOf(this, new.target.prototype);
 
 		this.name = name ?? 'Error';
-		this.httpCode = httpCode;
+		this.httpCode = httpCode;		
 
 		if (isOperational !== undefined) {
 			this.isOperational = isOperational;
 		}
 
+		if (avoidPrintingError !== undefined) {
+			this.avoidPrintingError = avoidPrintingError;
+		}
+
 		Error.captureStackTrace(this);
+
+		if (!this.avoidPrintingError) {
+			if (this.isOperational) {
+				Logger.error(`An error was thrown with code: ${this.httpCode} and message: ${description}`);
+			} else {
+				Logger.fatal(`A fatal error was thrown with code: ${this.httpCode} and message: ${description}. Will close the program.`);
+			}
+		}
 	}
 }

@@ -1,6 +1,8 @@
+import { SURVEY_CACHE_FILE } from "../consts/general";
 import { PaginatedRequest } from "../interfaces/pagination";
+import { Logger } from "../logger/logger";
 import { FleetApi, PurchaseCargoRequest, SellCargoRequest, ShipType, Survey } from "../packages/spacetraders-sdk";
-import { tryApiRequest, validatePagination } from "../utils";
+import { appendToFile, calculateTimeUntilArrival, tryApiRequest, validatePagination } from "../utils";
 import { createAxiosInstance } from "./create-axios-instance";
 import { createConfiguration } from "./create-configuration";
 
@@ -16,7 +18,9 @@ export async function getShip(shipSymbol: string) {
 
 	return await tryApiRequest(async () => {
 		const result = await shipsApi.getMyShip(shipSymbol);
-		return result.data;
+		const { data } = result;
+		Logger.info(`Got ship details: ${JSON.stringify(data, undefined, 4)}`);
+		return data;
 	}, "Could not get ships"); 
 }
 
@@ -28,7 +32,9 @@ export async function listShips(pagination: PaginatedRequest) {
 
 	return await tryApiRequest(async () => {
 		const result = await shipsApi.getMyShips(page, limit);
-		return result.data;
+		const { data } = result;
+		Logger.info(`Listing ${limit} ships in page ${page}: ${JSON.stringify(data, undefined, 4)}`);
+		return data;
 	}, "Could not list ships");
 }
 
@@ -37,7 +43,9 @@ export async function purchaseShip(shipType: ShipType, waypointSymbol: string) {
 	
 	return await tryApiRequest(async () => {
 		const result = await shipsApi.purchaseShip({ shipType, waypointSymbol });
-		return result.data;
+		const { data } = result;
+		Logger.info(`Purchased ship of type ${shipType} at waypoint ${waypointSymbol} for ${data.data.transaction.price}$. Remaining balance: ${data.data.agent.credits} The new ship's symbol is ${data.data.ship.symbol}.`);
+		return data;
 	}, "Could not purchase ship");
 }
 
@@ -46,7 +54,10 @@ export async function navigateShip(shipSymbol: string, waypointSymbol: string) {
 
 	return await tryApiRequest(async () => {
 		const result = await shipsApi.navigateShip(shipSymbol, { waypointSymbol });
-		return result.data;
+		const { data } = result;
+		const { humanReadableTimestamp } = calculateTimeUntilArrival(data.data.nav.route.arrival);
+		Logger.info(`Ship with symbol ${shipSymbol} is currently navigating to ${waypointSymbol} in flight mode ${data.data.nav.flightMode}. Expected time until arrival: ${data.data.nav.route.arrival} (${humanReadableTimestamp}).`);
+		return data;
 	}, "Could not navigate ship");
 } 
 
@@ -55,7 +66,9 @@ export async function dockShip(shipSymbol: string) {
 
 	return await tryApiRequest(async () => {
 		const result = await shipsApi.dockShip(shipSymbol);
-		return result.data;
+		const { data } = result;
+		Logger.info(`Ship with symbol ${shipSymbol} is now docked in waypoint symbol ${data.data.nav.waypointSymbol}.`);
+		return data;
 	}, "Could not dock ship");
 }
 
@@ -64,6 +77,8 @@ export async function refuelShip(shipSymbol: string) {
 
 	return await tryApiRequest(async () => {
 		const result = await shipsApi.refuelShip(shipSymbol);
+		const { data } = result;
+		Logger.info(`Ship with symbol ${shipSymbol} refueled. Gained ${data.data.transaction.units} units of fuel, paying ${data.data.transaction.totalPrice}. Current balance: ${data.data.agent.credits}.`);
 		return result.data;
 	}, "Could not refuel ship");
 }
@@ -73,8 +88,10 @@ export async function orbitShip(shipSymbol: string) {
 
 	return await tryApiRequest(async () => {
 		const result = await shipsApi.orbitShip(shipSymbol);
-		return result.data;
-	}, "Could not refuel ship");
+		const { data } = result;
+		Logger.info(`Ship with symbol ${shipSymbol} is orbiting waypoint ${data.data.nav.waypointSymbol}.`);
+		return data;
+	}, "Could not orbit ship");
 }
 
 export async function extractResources(shipSymbol: string, survey?: Survey) {
@@ -82,7 +99,9 @@ export async function extractResources(shipSymbol: string, survey?: Survey) {
 
 	return await tryApiRequest(async () => {
 		const result = await shipsApi.extractResources(shipSymbol, { survey })
-		return result.data;
+		const { data } = result;
+		Logger.info(`Ship with symbol ${shipSymbol} extracted ${data.data.extraction.yield.units} units of ${data.data.extraction.yield.symbol} and entered a cooldown of ${data.data.cooldown.totalSeconds} seconds. Current cargo space: ${data.data.cargo.units}/${data.data.cargo.capacity}`);
+		return data;
 	}, "Could not extract resources");
 }
 
@@ -91,7 +110,9 @@ export async function sellCargo(shipSymbol: string, sellObject: SellCargoRequest
 
 	return await tryApiRequest(async () => {
 		const result = await shipsApi.sellCargo(shipSymbol, sellObject)
-		return result.data;
+		const { data } = result;
+		Logger.info(`Ship with symbol ${shipSymbol} sold ${sellObject.units} units of ${sellObject.symbol} successfully for ${data.data.transaction.totalPrice}$. Current balance: ${data.data.agent.credits}`);
+		return data;
 	}, "Could not sell ship cargo");
 }
 
@@ -100,6 +121,27 @@ export async function purchaseCargo(shipSymbol: string, purchaseObject: Purchase
 
 	return await tryApiRequest(async () => {
 		const result = await shipsApi.purchaseCargo(shipSymbol, purchaseObject);
-		return result.data;
+		const { data } = result;
+		Logger.info(`Ship with symbol ${shipSymbol} purchased ${purchaseObject.units} units of ${purchaseObject.symbol} for ${data.data.transaction.totalPrice}$. Current balance: ${data.data.agent.credits}`);
+		return data;
 	}, "Could not purchase into ship cargo");
+}
+
+export async function createSurvey(shipSymbol: string) {
+	const shipsApi = getFleetApi();
+
+	return await tryApiRequest(async () => {
+		const result = await shipsApi.createSurvey(shipSymbol);
+		const { data } = result;
+		const surveys = data.data.surveys;
+		Logger.info(`Ship with symbol ${shipSymbol} created ${surveys.length} new surveys:`);
+		let counter = 1;
+		for (const survey of surveys) {
+			Logger.info(`Survey #${counter} details: ${JSON.stringify(survey, undefined, 4)}`);
+			counter++;
+		}
+		Logger.info(`Ship with symbol ${shipSymbol} entered a cooldown of ${data.data.cooldown.totalSeconds} seconds.`);
+		appendToFile(SURVEY_CACHE_FILE, JSON.stringify(surveys));
+		return data;
+	}, "Could not survey waypoint.");
 }

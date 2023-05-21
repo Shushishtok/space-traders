@@ -1,8 +1,10 @@
+import fs from 'fs';
 import { Response } from "express";
 import { AppError, HttpCode, ErrorNames } from "./exceptions/app-error";
 import { AxiosError, isAxiosError } from "axios";
 import { ContractDeliverGood, GetMyShip200Response } from "./packages/spacetraders-sdk";
 import moment from "moment";
+import { Logger } from "./logger/logger";
 
 export async function sleep(milliSeconds: number) {
 	await new Promise((resolve) => {
@@ -42,7 +44,7 @@ export function validateMissingParameters(paramsToCheck: object) {
 
 export async function tryApiRequest<T>(tryFunc: () => T, errorMessage: string) {
 	try {
-		const result = await tryFunc();
+		const result = await tryFunc();		
 		return result;
 	} catch (e) {
 		let description = `${errorMessage}. `;
@@ -52,10 +54,13 @@ export async function tryApiRequest<T>(tryFunc: () => T, errorMessage: string) {
 			description += `Error message: ${e}`;
 		}
 
+		Logger.error(description);
+
 		throw new AppError({
 			description,
 			httpCode: HttpCode.INTERNAL_SERVER_ERROR,
 			name: ErrorNames.API_ERROR,
+			avoidPrintingError: true,
 		});
 	}
 }
@@ -107,7 +112,17 @@ export function hasInventoryUnitInCargo(ship: GetMyShip200Response, tradeSymbol:
 	return getInventoryUnitFromCargo(ship, tradeSymbol) !== undefined;
 }
 
-export function calculateTimeUntilArrival(arrivalTime: string) {
-	const now = moment();
-	return moment(arrivalTime).diff(now);
+export function calculateTimeUntilArrival(arrivalTime: string) {	
+	const diff = moment(arrivalTime).diff(moment());
+	const duration = moment.duration(diff);
+	const hours = duration.asHours();
+	const minutes = duration.asMinutes();
+	const seconds = duration.asSeconds();
+	const milliseconds = duration.asMilliseconds();	
+	const humanReadableTimestamp = `${Math.round(hours)} hours, ${Math.round(minutes)} minutes and ${Math.round(seconds)} seconds`;
+	return { humanReadableTimestamp, hours, minutes, seconds, milliseconds };
+}
+
+export function appendToFile(filePath: string, data: string) {
+	fs.appendFileSync(filePath, data);
 }

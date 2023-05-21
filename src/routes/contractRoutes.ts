@@ -38,10 +38,10 @@ contractRouter.post("/deliver", async (req, res) => {
 	sendSuccessResultResponse(res, result);
 });
 
-contractRouter.post("/allDeliveryTerms", async (req, res) => {
-	const { shipSymbol, contractId }: DeliverAllContracts = req.body;
-	validateMissingParameters({ shipSymbol, contractId });
+// contractRouter.post("/allDeliveryTerms", async (req, res) => {
+// 	const { shipSymbol, contractId }: DeliverAllContracts = req.body;
+// 	validateMissingParameters({ shipSymbol, contractId });
 
-	CustomRequests.deliverGoodsToContract(shipSymbol, contractId);
-	res.status(200).send("Started delivery process, check logs for details");
-});
+// 	CustomRequests.deliverGoodsToContract(shipSymbol, contractId);
+// 	res.status(200).send("Started delivery process, check logs for details");
+// });

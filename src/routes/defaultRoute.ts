@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { register } from '../requests/general';
-import { calculateTimeUntilArrival, sendSuccessResultResponse } from '../utils';
+import { sendSuccessResultResponse } from '../utils';
+import { RegisterRequestFactionEnum } from '../packages/spacetraders-sdk';
 
 export const defaultRouter = Router();
 
@@ -9,7 +10,7 @@ defaultRouter.get("/", (req, res) => {
 });
 
 defaultRouter.post("/start-game", async (req, res) => {	
-	const { symbol }: { symbol: string } = req.body;
-	const result = await register(symbol);
+	const { symbol, faction }: { symbol: string, faction: RegisterRequestFactionEnum } = req.body;
+	const result = await register(symbol, faction);
 	sendSuccessResultResponse(res, result);
 });

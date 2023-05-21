@@ -15,34 +15,22 @@
 
 
 /**
- * A cooldown is a period of time in which a ship cannot perform certain actions.
+ * 
  * @export
- * @interface Cooldown
+ * @interface GetStatus200ResponseLeaderboardsMostCreditsInner
  */
-export interface Cooldown {
+export interface GetStatus200ResponseLeaderboardsMostCreditsInner {
     /**
-     * The symbol of the ship that is on cooldown
+     * 
      * @type {string}
-     * @memberof Cooldown
+     * @memberof GetStatus200ResponseLeaderboardsMostCreditsInner
      */
-    'shipSymbol': string;
+    'agentSymbol': string;
     /**
-     * The total duration of the cooldown in seconds
+     * 
      * @type {number}
-     * @memberof Cooldown
+     * @memberof GetStatus200ResponseLeaderboardsMostCreditsInner
      */
-    'totalSeconds': number;
-    /**
-     * The remaining duration of the cooldown in seconds
-     * @type {number}
-     * @memberof Cooldown
-     */
-    'remainingSeconds': number;
-    /**
-     * The date and time when the cooldown expires in ISO 8601 format
-     * @type {string}
-     * @memberof Cooldown
-     */
-    'expiration'?: string;
+    'credits': number;
 }
 

@@ -13,36 +13,21 @@
  */
 
 
+// May contain unused imports in some cases
+// @ts-ignore
+import { NegotiateContract200ResponseData } from './negotiate-contract200-response-data';
 
 /**
- * A cooldown is a period of time in which a ship cannot perform certain actions.
+ * 
  * @export
- * @interface Cooldown
+ * @interface NegotiateContract200Response
  */
-export interface Cooldown {
+export interface NegotiateContract200Response {
     /**
-     * The symbol of the ship that is on cooldown
-     * @type {string}
-     * @memberof Cooldown
+     * 
+     * @type {NegotiateContract200ResponseData}
+     * @memberof NegotiateContract200Response
      */
-    'shipSymbol': string;
-    /**
-     * The total duration of the cooldown in seconds
-     * @type {number}
-     * @memberof Cooldown
-     */
-    'totalSeconds': number;
-    /**
-     * The remaining duration of the cooldown in seconds
-     * @type {number}
-     * @memberof Cooldown
-     */
-    'remainingSeconds': number;
-    /**
-     * The date and time when the cooldown expires in ISO 8601 format
-     * @type {string}
-     * @memberof Cooldown
-     */
-    'expiration'?: string;
+    'data': NegotiateContract200ResponseData;
 }
 

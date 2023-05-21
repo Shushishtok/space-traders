@@ -1,4 +1,5 @@
 import { AppError, ErrorNames, HttpCode } from "../exceptions/app-error";
+import { Logger } from "../logger/logger";
 import { AgentsApi } from "../packages/spacetraders-sdk";
 import { tryApiRequest } from "../utils";
 import { createAxiosInstance } from "./create-axios-instance";
@@ -16,6 +17,8 @@ export async function myAgent() {
 
 	return await tryApiRequest(async () => {
 		const result = await agentApi.getMyAgent();
-		return result.data;
+		const { data } = result;
+		Logger.info(`Got agent data: ${JSON.stringify(data, undefined, 4)}`);
+		return data;
 	}, "Could not agent details");
 }

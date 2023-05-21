@@ -1,3 +1,5 @@
+import { AppError, ErrorNames } from "../exceptions/app-error";
+import { Logger } from "../logger/logger";
 import { ContractsApi } from "../packages/spacetraders-sdk";
 import { tryApiRequest, validatePagination } from "../utils";
 import { createAxiosInstance } from "./create-axios-instance";
@@ -15,7 +17,9 @@ export async function acceptContract(contractId: string) {
 	
 	return await tryApiRequest(async () => {
 		const result = await contractsApi.acceptContract(contractId);
-		return result.data;
+		const { data } = result;
+		Logger.info(`Successfully accepted contract with ID: ${contractId}. Gained ${data.data.contract.terms.payment.onAccepted} credits. Current balance: ${data.data.agent.credits}`);
+		return data;
 	}, "Could not accept contract");
 }
 
@@ -25,7 +29,9 @@ export async function listContracts(page: number, limit: number) {
 	
 	return await tryApiRequest(async () => {
 		const result = await contractsApi.getContracts(page, limit);
-		return result.data;
+		const { data } = result; 
+		Logger.info(`Listing ${limit} contracts, page ${page}: ${JSON.stringify(data, undefined, 4)}`);
+		return data;
 	}, "Could not list contracts");
 }
 
@@ -34,7 +40,9 @@ export async function getContract(contractId: string) {
 	
 	return await tryApiRequest(async () => {
 		const result = await contractsApi.getContract(contractId);
-		return result.data;
+		const { data } = result;
+		Logger.info(`Got contract with ID: ${contractId}. Contract details: ${JSON.stringify(data, undefined, 4)}`);
+		return data;
 	}, "Could not get contract");
 }
 
@@ -43,6 +51,37 @@ export async function deliverContract(contractId: string, shipSymbol: string, tr
 
 	return await tryApiRequest(async () => {
 		const result = await contractsApi.deliverContract(contractId, { shipSymbol, tradeSymbol, units });
-		return result;
+		const { data } = result;		
+		const deliveryTerms = data.data.contract.terms.deliver;		
+		if (!deliveryTerms) {
+			throw new AppError({
+				description: `No delivery terms were found for contractId ${contractId}. This is likely to be a server side error.`,
+				httpCode: 500,
+				isOperational: false,
+				name: ErrorNames.LOGICAL_FAILURE,
+			});
+		}
+
+		const deliveredUnitsTerms = deliveryTerms.find(term => term.tradeSymbol === tradeSymbol);
+		if (!deliveredUnitsTerms) {
+			throw new AppError({
+				description: `No delivery terms for resource of type ${tradeSymbol} were found for contractId ${contractId}. This is likely to be as erver side error.`,
+				httpCode: 500,
+				isOperational: false,
+				name: ErrorNames.LOGICAL_FAILURE,
+			});
+		}		
+		const { unitsFulfilled, unitsRequired } = deliveredUnitsTerms;
+
+		Logger.info(`Delivered ${units} units of ${tradeSymbol} to contract ${contractId}. In total, ${unitsFulfilled} units out of ${unitsRequired} required were delivered.`);
+		if (unitsFulfilled >= unitsRequired) {
+			Logger.info(`Completed delivery of ${tradeSymbol} for contractId ${contractId}!`);
+		}
+
+		if (data.data.contract.fulfilled) {
+			Logger.info(`Contract ${contractId} was fulfilled!`);
+		}
+
+		return data;
 	}, "Could not deliver goods to contract");
 }

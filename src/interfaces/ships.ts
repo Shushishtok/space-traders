@@ -25,3 +25,8 @@ export interface ShipCargoTransaction extends ShipSymbol {
 export interface ShipFullCargoPurchase extends ShipSymbol {
 	unitSymbol: string;
 }
+
+export interface ShipExtractionAutomation extends ShipSymbol {
+	stop: boolean;
+	survey?: Survey;
+}

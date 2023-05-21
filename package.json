@@ -6,8 +6,7 @@
   "scripts": {
     "build": "tsc",
     "prestart": "npm run build",
-    "start": "nodemon src/index.ts",
-    "debug": "ts-node --inspect src/index.ts"
+    "start": "nodemon src/index.ts"    
   },
   "repository": {
     "type": "git",

@@ -13,36 +13,30 @@
  */
 
 
+// May contain unused imports in some cases
+// @ts-ignore
+import { GetStatus200ResponseLeaderboardsMostCreditsInner } from './get-status200-response-leaderboards-most-credits-inner';
+// May contain unused imports in some cases
+// @ts-ignore
+import { GetStatus200ResponseLeaderboardsMostSubmittedChartsInner } from './get-status200-response-leaderboards-most-submitted-charts-inner';
 
 /**
- * A cooldown is a period of time in which a ship cannot perform certain actions.
+ * 
  * @export
- * @interface Cooldown
+ * @interface GetStatus200ResponseLeaderboards
  */
-export interface Cooldown {
+export interface GetStatus200ResponseLeaderboards {
     /**
-     * The symbol of the ship that is on cooldown
-     * @type {string}
-     * @memberof Cooldown
+     * 
+     * @type {Array<GetStatus200ResponseLeaderboardsMostCreditsInner>}
+     * @memberof GetStatus200ResponseLeaderboards
      */
-    'shipSymbol': string;
+    'mostCredits': Array<GetStatus200ResponseLeaderboardsMostCreditsInner>;
     /**
-     * The total duration of the cooldown in seconds
-     * @type {number}
-     * @memberof Cooldown
+     * 
+     * @type {Array<GetStatus200ResponseLeaderboardsMostSubmittedChartsInner>}
+     * @memberof GetStatus200ResponseLeaderboards
      */
-    'totalSeconds': number;
-    /**
-     * The remaining duration of the cooldown in seconds
-     * @type {number}
-     * @memberof Cooldown
-     */
-    'remainingSeconds': number;
-    /**
-     * The date and time when the cooldown expires in ISO 8601 format
-     * @type {string}
-     * @memberof Cooldown
-     */
-    'expiration'?: string;
+    'mostSubmittedCharts': Array<GetStatus200ResponseLeaderboardsMostSubmittedChartsInner>;
 }
 

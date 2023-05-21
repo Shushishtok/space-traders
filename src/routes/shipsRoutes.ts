@@ -3,7 +3,8 @@ import * as Ships from '../requests/ships';
 import * as CustomRequests from '../requests/custom-requests';
 import { sendSuccessResultResponse, validateMissingParameters } from '../utils';
 import { PaginatedRequest } from "../interfaces/pagination";
-import { ExtractIntoShip, NavigateShip, PurchaseShip, ShipCargoTransaction, ShipFullCargoPurchase, ShipSymbol } from '../interfaces/ships';
+import { ExtractIntoShip, NavigateShip, PurchaseShip, ShipCargoTransaction, ShipExtractionAutomation, ShipFullCargoPurchase, ShipSymbol } from '../interfaces/ships';
+import { HttpCode } from '../exceptions/app-error';
 
 export const shipsRouter = Router();
 
@@ -97,4 +98,25 @@ shipsRouter.post("/purchase/cargo/full", async (req, res) => {
 
 	await CustomRequests.purchaseFullCargo(shipSymbol, unitSymbol);
 	sendSuccessResultResponse(res);
+});
+
+shipsRouter.post('/automate/extraction', async (req, res) => {
+	const { shipSymbol, stop, survey }: ShipExtractionAutomation = req.body;
+	validateMissingParameters({ shipSymbol });
+
+	if (stop) {
+		await CustomRequests.stopAutomatedExtraction(shipSymbol);
+		sendSuccessResultResponse(res);
+	} else {
+		CustomRequests.startAutomatedExtraction(shipSymbol, survey);
+		sendSuccessResultResponse(res);
+	}
+});
+
+shipsRouter.post('/survey', async (req, res) => {
+	const { shipSymbol }: ShipSymbol = req.body;
+	validateMissingParameters({ shipSymbol });
+
+	const result = await Ships.createSurvey(shipSymbol);
+	sendSuccessResultResponse(res, result);
 });
