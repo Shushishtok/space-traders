@@ -49,7 +49,7 @@ export async function tryApiRequest<T>(tryFunc: () => T, errorMessage: string) {
 	} catch (e) {
 		let description = `${errorMessage}. `;
 		if (isAxiosError(e)) {
-			description += `Error code: ${e.response?.status}, error message: ${e.response?.data?.error?.message ?? e.message}`;
+			description += `Error code: ${e.response?.data?.error?.code}, error message: ${e.response?.data?.error?.message ?? e.message}`;
 		} else {
 			description += `Error message: ${e}`;
 		}
