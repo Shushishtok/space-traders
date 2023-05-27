@@ -1,10 +1,9 @@
 import { Router } from 'express';
 import * as Ships from '../requests/ships';
 import * as CustomRequests from '../requests/custom-requests';
-import { sendSuccessResultResponse, validateMissingParameters } from '../utils';
+import { sendResultResponse, validateMissingParameters } from '../utils';
 import { PaginatedRequest } from "../interfaces/pagination";
-import { ExtractIntoShip, NavigateShip, PurchaseShip, ShipCargoTransaction, ShipExtractionAutomation, ShipFullCargoPurchase, ShipSymbol } from '../interfaces/ships';
-import { HttpCode } from '../exceptions/app-error';
+import { ExtractIntoShip, NavigateShip, PurchaseShip, ShipCargoTransaction, ShipExtractionAutomation, ShipExtractionAutomationAll, ShipFullCargoPurchase, ShipSymbol } from '../interfaces/ships';
 
 export const shipsRouter = Router();
 
@@ -12,14 +11,14 @@ shipsRouter.get("/", async (req, res) => {
 	const { shipSymbol }: ShipSymbol = req.body;
 	
 	const result = await Ships.getShip(shipSymbol);
-	sendSuccessResultResponse(res, result);
+	sendResultResponse(res, result);
 });
 
 shipsRouter.get("/all", async (req, res) => {
 	const { page, limit }: PaginatedRequest = req.body;
 	
 	const result = await Ships.listShips({ page, limit });
-	sendSuccessResultResponse(res, result);
+	sendResultResponse(res, result);
 });
 
 shipsRouter.post("/purchase/ship", async (req, res) => {
@@ -27,7 +26,7 @@ shipsRouter.post("/purchase/ship", async (req, res) => {
 	validateMissingParameters({ shipType, waypointSymbol });
 
 	const result = await Ships.purchaseShip(shipType, waypointSymbol);
-	sendSuccessResultResponse(res, result);
+	sendResultResponse(res, result);
 });
 
 shipsRouter.post("/navigate", async (req, res) => {
@@ -35,7 +34,7 @@ shipsRouter.post("/navigate", async (req, res) => {
 	validateMissingParameters({ shipSymbol, waypointSymbol });
 
 	const result = await Ships.navigateShip(shipSymbol, waypointSymbol);
-	sendSuccessResultResponse(res, result);
+	sendResultResponse(res, result);
 });
 
 shipsRouter.post("/dock", async (req, res) => {
@@ -43,7 +42,7 @@ shipsRouter.post("/dock", async (req, res) => {
 	validateMissingParameters({ shipSymbol });
 
 	const result = await Ships.dockShip(shipSymbol);
-	sendSuccessResultResponse(res, result);
+	sendResultResponse(res, result);
 });
 
 shipsRouter.post("/refuel", async (req, res) => {
@@ -51,7 +50,7 @@ shipsRouter.post("/refuel", async (req, res) => {
 	validateMissingParameters({ shipSymbol });
 
 	const result = await Ships.refuelShip(shipSymbol);
-	sendSuccessResultResponse(res, result);
+	sendResultResponse(res, result);
 });
 
 shipsRouter.post("/orbit", async (req, res) => {
@@ -59,7 +58,7 @@ shipsRouter.post("/orbit", async (req, res) => {
 	validateMissingParameters({ shipSymbol });
 
 	const result = await Ships.orbitShip(shipSymbol);
-	sendSuccessResultResponse(res, result);
+	sendResultResponse(res, result);
 });
 
 shipsRouter.post("/extract", async (req, res) => {
@@ -73,7 +72,7 @@ shipsRouter.post("/extract", async (req, res) => {
 	}
 
 	const result = await Ships.extractResources(shipSymbol, survey);
-	sendSuccessResultResponse(res, result);
+	sendResultResponse(res, result);
 });
 
 shipsRouter.post("/sell", async (req, res) => {
@@ -81,7 +80,7 @@ shipsRouter.post("/sell", async (req, res) => {
 	validateMissingParameters({ shipSymbol, unitSymbol, unitCount });
 
 	const result = await Ships.sellCargo(shipSymbol, { symbol: unitSymbol, units: unitCount });
-	sendSuccessResultResponse(res, result);
+	sendResultResponse(res, result);
 });
 
 shipsRouter.post("/purchase/cargo", async (req, res) => {
@@ -89,7 +88,7 @@ shipsRouter.post("/purchase/cargo", async (req, res) => {
 	validateMissingParameters({ shipSymbol, unitSymbol, unitCount });
 
 	const result = await Ships.purchaseCargo(shipSymbol, { symbol: unitSymbol, units: unitCount });
-	sendSuccessResultResponse(res, result);
+	sendResultResponse(res, result);
 });
 
 shipsRouter.post("/purchase/cargo/full", async (req, res) => {
@@ -97,7 +96,7 @@ shipsRouter.post("/purchase/cargo/full", async (req, res) => {
 	validateMissingParameters({ shipSymbol, unitSymbol });
 
 	await CustomRequests.purchaseFullCargo(shipSymbol, unitSymbol);
-	sendSuccessResultResponse(res);
+	sendResultResponse(res);
 });
 
 shipsRouter.post('/automate/extraction', async (req, res) => {
@@ -105,12 +104,26 @@ shipsRouter.post('/automate/extraction', async (req, res) => {
 	validateMissingParameters({ shipSymbol });
 
 	if (stop) {
-		await CustomRequests.stopAutomatedExtraction(shipSymbol);
-		sendSuccessResultResponse(res);
+		CustomRequests.stopAutomatedExtraction(shipSymbol);		
 	} else {
 		CustomRequests.startAutomatedExtraction(shipSymbol);
-		sendSuccessResultResponse(res);
 	}
+	sendResultResponse(res);
+});
+
+shipsRouter.post('/automate/extraction/all', async (req, res) => {
+	const { stop }: ShipExtractionAutomationAll = req.body;
+	
+	const ships = await CustomRequests.getAllShips();	
+	for (const ship of ships) {
+		if (stop) {
+			CustomRequests.stopAutomatedExtraction(ship.symbol);
+		} else {
+			CustomRequests.startAutomatedExtraction(ship.symbol);
+		}
+	}
+
+	sendResultResponse(res);
 });
 
 shipsRouter.post('/survey', async (req, res) => {
@@ -118,5 +131,5 @@ shipsRouter.post('/survey', async (req, res) => {
 	validateMissingParameters({ shipSymbol });
 
 	const result = await Ships.createSurvey(shipSymbol);
-	sendSuccessResultResponse(res, result);
+	sendResultResponse(res, result);
 });

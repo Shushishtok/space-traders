@@ -1,7 +1,7 @@
 import { Logger } from '../logger/logger';
 import { DefaultApi, RegisterRequestFactionEnum } from '../packages/spacetraders-sdk';
 import { AgentModel, ContractModel, ShipModel } from '../sequelize/models';
-import { tryApiRequest } from '../utils';
+import { isErrorCodeData, tryApiRequest } from '../utils';
 import { createAxiosInstance } from './create-axios-instance';
 import { createConfiguration } from './create-configuration';
 
@@ -18,6 +18,8 @@ export async function register(symbol: string, faction: RegisterRequestFactionEn
 		});		
 		return result.data;
 	}, "Could not register new agent");
+
+	if (isErrorCodeData(data)) return data;
 
 	Logger.info(`Registered successfully with agent callsign ${symbol}. The agent belongs to the ${faction} faction!`);
 	const agentCreatePromise = AgentModel.create({ ...data.data.agent, token: data.data.token });	

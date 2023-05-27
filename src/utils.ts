@@ -5,10 +5,11 @@ import { isAxiosError } from "axios";
 import { ContractDeliverGood, GetMyShip200Response, Ship } from "./packages/spacetraders-sdk";
 import moment from "moment";
 import { Logger } from "./logger/logger";
+import { PaginatedRequest, PaginatedResult } from './interfaces/pagination';
 
-export async function sleep(milliSeconds: number) {
+export async function sleep(seconds: number) {
 	await new Promise((resolve) => {
-		setTimeout(resolve, milliSeconds * 1000)
+		setTimeout(resolve, seconds * 1000)
 	});
 }
 
@@ -42,32 +43,21 @@ export function validateMissingParameters(paramsToCheck: object) {
 	}
 }
 
-export async function tryApiRequest<T>(tryFunc: () => T, errorMessage: string, allowedErrorCodes?: number[], handleRetryFunc?: (code: number) => Promise<boolean>, retries = 3): Promise<T> {
+export async function tryApiRequest<T>(tryFunc: () => T, errorMessage: string, allowedErrorCodes?: number[]): Promise<T | number> {
 	try {
 		const result = await tryFunc();		
 		return result;
 	} catch (err) {		
-		const isAxiosErr = isAxiosError(err);
-		if (isAxiosErr) {
+		if (isAxiosError(err)) {
 			const errorCode = err.response?.data?.error?.code;
-
-			// Check if code can be retried
-			if (retries > 0) {
-				// Check if code can be tested for retries
-				if (errorCode && allowedErrorCodes && allowedErrorCodes.includes(errorCode) && handleRetryFunc !== undefined) {
-					// Try handling
-					const handledCodeData = await handleRetryFunc(errorCode);
-					if (handledCodeData) {
-						retries -= 1;
-						return await tryApiRequest<T>(tryFunc, errorMessage, allowedErrorCodes, handleRetryFunc, retries);
-					}
-				}
+			if (errorCode && allowedErrorCodes && allowedErrorCodes.includes(errorCode)) {
+				return errorCode;
 			}
 		}
 
 		// We couldn't handle, print an error message.
 		let description = `${errorMessage}. `;
-		description += isAxiosErr ? 
+		description += isAxiosError(err) ? 
 			`Error code: ${err.response?.data?.error?.code ?? err.response?.status}, error message: ${err.response?.data?.error?.message ?? err.message}` :
 			`Error message: ${err}`;		
 
@@ -82,7 +72,11 @@ export async function tryApiRequest<T>(tryFunc: () => T, errorMessage: string, a
 	}
 }
 
-export async function sendSuccessResultResponse<T>(response: Response, result?: T) {
+export async function sendResultResponse<T>(response: Response, result?: T) {
+	if (result && result === null) {
+		response.status(500).send(null);
+	}
+
 	response.status(200).send(result);
 }
 
@@ -146,4 +140,34 @@ export function appendToFile(filePath: string, data: string) {
 
 export function canShipSurvey(ship: Ship) {
 	return ship.mounts.some(mount => mount.symbol.includes("MOUNT_SURVEYOR"));
+}
+
+export function isErrorCodeData<T>(data: T | number): data is number {
+	return typeof data === "number"; 
+}
+
+export async function paginateResults<T>(paginationFunc: (pagination: PaginatedRequest) => T) {
+	const items = [];
+	let pagination: PaginatedRequest = { limit: 20, page: 1 };
+	let paginationFinished = false;
+	let attempts = 0;
+	while (!paginationFinished || attempts > 500) {
+		attempts += 1;
+		const result = await paginationFunc(pagination) as PaginatedResult<T>;
+		if (isErrorCodeData(result)) { // shouldn't occur, but just in case
+			paginationFinished = true;
+			continue;
+		}
+
+		if (result.meta.total <= (pagination.page * pagination.limit)) {
+			paginationFinished = true;
+		} else {
+			pagination.page += 1;
+		}
+
+		items.push(...result.data);
+		await sleep(1);
+	}
+
+	return items;
 }

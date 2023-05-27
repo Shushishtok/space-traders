@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as Contracts from '../requests/contracts';
 import * as CustomRequests from "../requests/custom-requests";
-import { sendSuccessResultResponse, validateMissingParameters } from '../utils';
+import { sendResultResponse, validateMissingParameters } from '../utils';
 import { PaginatedRequest } from '../interfaces/pagination';
 import { ContractID, DeliverAllContracts, DeliverContact } from '../interfaces/contracts';
 
@@ -12,14 +12,14 @@ contractRouter.post("/accept", async (req, res) => {
 	validateMissingParameters({ contractId });
 
 	const result = await Contracts.acceptContract(contractId);
-	sendSuccessResultResponse(res, result);
+	sendResultResponse(res, result);
 });
 
 contractRouter.get("/list", async (req, res) => {
 	const { page, limit }: PaginatedRequest = req.body;	
 
 	const result = await Contracts.listContracts(page, limit);
-	sendSuccessResultResponse(res, result);
+	sendResultResponse(res, result);
 });
 
 contractRouter.get("/", async (req, res) => {
@@ -27,7 +27,7 @@ contractRouter.get("/", async (req, res) => {
 	validateMissingParameters({ contractId });
 
 	const result = await Contracts.getContract(contractId);
-	sendSuccessResultResponse(res, result);
+	sendResultResponse(res, result);
 });
 
 contractRouter.post("/deliver", async (req, res) => {
@@ -35,7 +35,7 @@ contractRouter.post("/deliver", async (req, res) => {
 	validateMissingParameters({ contractId, shipSymbol, tradeSymbol, units });
 
 	const result = await Contracts.deliverContract(contractId, shipSymbol, tradeSymbol, units);
-	sendSuccessResultResponse(res, result);
+	sendResultResponse(res, result);
 });
 
 // contractRouter.post("/allDeliveryTerms", async (req, res) => {

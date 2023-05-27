@@ -2,7 +2,7 @@ import { AppError, ErrorNames } from "../exceptions/app-error";
 import { Logger } from "../logger/logger";
 import { ContractsApi } from "../packages/spacetraders-sdk";
 import { ContractModel, ShipModel } from "../sequelize/models";
-import { tryApiRequest, validatePagination } from "../utils";
+import { isErrorCodeData, tryApiRequest, validatePagination } from "../utils";
 import { createAxiosInstance } from "./create-axios-instance";
 import { createConfiguration } from "./create-configuration";
 
@@ -20,7 +20,9 @@ export async function acceptContract(contractId: string) {
 		const result = await contractsApi.acceptContract(contractId);
 		const { data } = result;		
 		return data;
-	}, "Could not accept contract");	
+	}, "Could not accept contract");
+
+	if (isErrorCodeData(data)) return data;
 
 	Logger.info(`Successfully accepted contract with ID: ${contractId}. Gained ${data.data.contract.terms.payment.onAccepted} credits. Current balance: ${data.data.agent.credits}`);
 	await ContractModel.update({ ...data.data.contract }, { where: { id: data.data.contract.id } });
@@ -38,6 +40,8 @@ export async function listContracts(page: number, limit: number) {
 		return data;
 	}, "Could not list contracts");
 
+	if (isErrorCodeData(data)) return data;
+
 	Logger.info(`Listing ${limit} contracts, page ${page}: ${JSON.stringify(data, undefined, 4)}`);
 
 	const promises = [];
@@ -50,13 +54,15 @@ export async function listContracts(page: number, limit: number) {
 }
 
 export async function getContract(contractId: string) {
-	const contractsApi = getContractsApi();
-	
+	const contractsApi = getContractsApi();	
+
 	const data = await tryApiRequest(async () => {
 		const result = await contractsApi.getContract(contractId);
 		const { data } = result;		
 		return data;
 	}, "Could not get contract");
+
+	if (isErrorCodeData(data)) return data;
 
 	Logger.info(`Got contract with ID: ${contractId}. Contract details: ${JSON.stringify(data, undefined, 4)}`);
 	await ContractModel.update({ ...data.data }, { where: { id: data.data.id } });
@@ -72,6 +78,8 @@ export async function deliverContract(contractId: string, shipSymbol: string, tr
 		const { data } = result;
 		return data;
 	}, `Could not deliver goods to contract id ${contractId}`);
+
+	if (isErrorCodeData(data)) return data;
 
 	const deliveryTerms = data.data.contract.terms.deliver;		
 		if (!deliveryTerms) {

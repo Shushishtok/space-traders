@@ -14,8 +14,8 @@ export class TransactionModel extends Model {
 	@Column({ type: DataType.INTEGER, allowNull: false, })
 	totalPrice!: number;
 
-	@Column({ type: DataType.INTEGER, allowNull: false, })
-	tradeSymbol!: number;
+	@Column({ type: DataType.STRING, allowNull: false, })
+	tradeSymbol!: string;
 
 	@Column({ type: DataType.STRING, allowNull: false, })
 	type!: string;

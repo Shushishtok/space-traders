@@ -3,20 +3,25 @@ import * as Systems from './system';
 import { Logger } from '../logger/logger';
 import { AutomatedActions } from '../automation/automated-action';
 import { Ship, Survey } from '../packages/spacetraders-sdk';
-import { canShipSurvey, sleep } from '../utils';
+import { canShipSurvey, isErrorCodeData, paginateResults, sleep } from '../utils';
 import { ShipModel, SurveyModel } from '../sequelize/models';
+import { PaginatedRequest } from '../interfaces/pagination';
 
 export async function getMarketAtShipsLocation(shipSymbol: string) {
 	const ship = await Ships.getShip(shipSymbol);
+	if (isErrorCodeData(ship)) return null;
 	const { systemSymbol, waypointSymbol } = ship.data.nav;
 	Logger.info(`Getting market at ship symbol ${shipSymbol} waypoint ${waypointSymbol}.`);
 
 	const marketAtShipLocation = await Systems.getMarket(systemSymbol, waypointSymbol);
+	if (isErrorCodeData(marketAtShipLocation)) return null;
 	return marketAtShipLocation.data;
 }
 
 export async function purchaseFullCargo(shipSymbol: string, tradeSymbol: string) {
 	const ship = await Ships.getShip(shipSymbol);
+	if (isErrorCodeData(ship)) return null;
+
 	const { capacity, units } = ship.data.cargo;
 	const remainingCapacity = capacity - units;
 	Logger.info(`Ship's cargo is ${units}/${capacity}, with additional space for ${remainingCapacity} units of ${tradeSymbol}.`);
@@ -50,17 +55,20 @@ export async function startAutomatedExtraction(shipSymbol: string) {
 			// If there is no survey, check if the ship is able to survey			
 			if (!survey && canShipSurvey(ship)) {
 				const surveyData = await Ships.createSurvey(ship.symbol);
-				survey = surveyData.data.surveys[0];
-				const cooldown = surveyData.data.cooldown.totalSeconds;
-
-				Logger.info(`Ship symbol ${shipSymbol} surveyed during mining loop and will goes into cooldown.`);
-
-				await sleep(cooldown);
-				continue;
+				if (!isErrorCodeData(surveyData)) {
+					survey = surveyData.data.surveys[0];
+					const cooldown = surveyData.data.cooldown.totalSeconds;
+	
+					Logger.info(`Ship symbol ${shipSymbol} surveyed during mining loop and will goes into cooldown.`);
+	
+					await sleep(cooldown);
+					continue;
+				}
 			}
 				
 			// Extract (fetch cooldown and mined units)
 			const extract = await Ships.extractResources(shipSymbol, survey);
+			if (isErrorCodeData(extract)) continue;
 			const cooldown = extract.data.cooldown.totalSeconds;
 			const minedUnits = extract.data.extraction.yield;
 	
@@ -84,11 +92,39 @@ export async function startAutomatedExtraction(shipSymbol: string) {
 	}
 }
 
-export async function stopAutomatedExtraction(shipSymbol: string) {
+export function stopAutomatedExtraction(shipSymbol: string) {
 	try {
 		const automatedActionName = `AutomatedExtraction-${shipSymbol}`;
 		AutomatedActions.stopAutomatedAction(automatedActionName);
 	} catch (err) {
 		Logger.error(`An error occurred while stopping automated extraction for ship ${shipSymbol}.`);
 	}
+}
+
+export async function getAllShips() {		
+	const ships = [];
+	let pagination: PaginatedRequest = { limit: 20, page: 1 };
+	let paginationFinished = false;
+	let attempts = 0;
+	while (!paginationFinished || attempts > 500) {
+		attempts += 1;
+		const result = await Ships.listShips(pagination);
+		if (isErrorCodeData(result)) { // shouldn't occur, but just in case
+			paginationFinished = true;
+			continue;
+		}
+
+		if (result.meta.total <= (pagination.page * pagination.limit)) {
+			paginationFinished = true;
+		} else {
+			pagination.page += 1;
+		}
+
+		ships.push(...result.data);
+		await sleep(1);
+	}	
+
+	//const ships = await paginateResults(Ships.listShips);
+	Logger.info(`Got a total of ${ships.length} ships.`);
+	return ships;
 }

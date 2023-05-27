@@ -2,7 +2,7 @@ import { AppError, ErrorNames, HttpCode } from "../exceptions/app-error";
 import { Logger } from "../logger/logger";
 import { AgentsApi } from "../packages/spacetraders-sdk";
 import { AgentModel } from "../sequelize/models";
-import { tryApiRequest } from "../utils";
+import { isErrorCodeData, tryApiRequest } from "../utils";
 import { createAxiosInstance } from "./create-axios-instance";
 import { createConfiguration } from "./create-configuration";
 
@@ -21,6 +21,8 @@ export async function myAgent() {
 		const { data } = result;
 		return data;
 	}, "Could not agent details");
+
+	if (isErrorCodeData(data)) return data;
 
 	Logger.info(`Got agent data: ${JSON.stringify(data, undefined, 4)}`);
 	await AgentModel.upsert({ ...data.data });

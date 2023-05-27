@@ -9,7 +9,7 @@ export class SurveyModel extends Model {
 	@Column({ type: DataType.STRING, allowNull: false })
 	expiration!: string;
 
-	@Column({ type: DataType.STRING, allowNull: false })
+	@Column({ type: DataType.STRING, allowNull: false, primaryKey: true })
 	signature!: string;
 
 	@Column({ type: DataType.ENUM(typeof SurveySizeEnum), allowNull: false })

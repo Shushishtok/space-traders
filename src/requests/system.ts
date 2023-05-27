@@ -1,7 +1,7 @@
 import { Logger } from "../logger/logger";
 import { SystemsApi } from "../packages/spacetraders-sdk";
 import { MarketModel, WaypointModel } from "../sequelize/models";
-import { tryApiRequest, validatePagination } from "../utils";
+import { isErrorCodeData, tryApiRequest, validatePagination } from "../utils";
 import { createAxiosInstance } from "./create-axios-instance";
 import { createConfiguration } from "./create-configuration";
 
@@ -21,6 +21,8 @@ export async function getWaypoint(systemSymbol: string, waypointSymbol: string) 
 		return data;
 	}, "Could not get waypoint");
 
+	if (isErrorCodeData(data)) return data;
+
 	Logger.info(`Got waypoint: ${JSON.stringify(data, undefined, 4)}`);
 	await WaypointModel.upsert({ ...data.data });
 
@@ -36,6 +38,8 @@ export async function getSystemsWaypoints(systemSymbol: string, page: number, li
 		const { data } = result;		
 		return data;
 	}, "Could not get all waypoints in the system");
+
+	if (isErrorCodeData(data)) return data;
 
 	Logger.info(`Listing ${limit} waypoints in page ${page} for system ${systemSymbol}: ${JSON.stringify(data, undefined, 4)}`);
 	const promises = [];
@@ -69,6 +73,8 @@ export async function getMarket(systemSymbol: string, waypointSymbol: string) {
 		const { data } = result;		
 		return data;
 	}, "Could not get market");
+
+	if (isErrorCodeData(data)) return data;
 
 	Logger.info(`Got market at waypoint: ${waypointSymbol}: ${JSON.stringify(data, undefined, 4)}`);
 	await MarketModel.upsert({ ...data.data });

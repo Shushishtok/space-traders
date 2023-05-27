@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as Systems from '../requests/system';
 import * as CustomRequests from '../requests/custom-requests';
-import { sendSuccessResultResponse, validateMissingParameters } from '../utils';
+import { sendResultResponse, validateMissingParameters } from '../utils';
 import { Waypoint, Waypoints } from "../interfaces/systems";
 import { ShipSymbol } from '../interfaces/ships';
 
@@ -12,7 +12,7 @@ systemsRouter.get("/waypoint", async (req, res) => {
 	validateMissingParameters({ systemSymbol, waypointSymbol });
 
 	const result = await Systems.getWaypoint(systemSymbol, waypointSymbol);
-	sendSuccessResultResponse(res, result);
+	sendResultResponse(res, result);
 });
 
 systemsRouter.get("/waypoints", async (req, res) => {
@@ -20,7 +20,7 @@ systemsRouter.get("/waypoints", async (req, res) => {
 	validateMissingParameters({ systemSymbol });
 
 	const result = await Systems.getSystemsWaypoints(systemSymbol, page, limit);
-	sendSuccessResultResponse(res, result);
+	sendResultResponse(res, result);
 });
 
 systemsRouter.get("/shipyard", async (req, res) => {
@@ -28,7 +28,7 @@ systemsRouter.get("/shipyard", async (req, res) => {
 	validateMissingParameters({ systemSymbol, waypointSymbol });	
 
 	const result = await Systems.getShipyard(systemSymbol, waypointSymbol);
-	sendSuccessResultResponse(res, result);
+	sendResultResponse(res, result);
 });
 
 systemsRouter.get("/market", async (req, res) => {
@@ -36,7 +36,7 @@ systemsRouter.get("/market", async (req, res) => {
 	validateMissingParameters({ systemSymbol, waypointSymbol });	
 
 	const result = await Systems.getMarket(systemSymbol, waypointSymbol);
-	sendSuccessResultResponse(res, result);
+	sendResultResponse(res, result);
 });
 
 systemsRouter.get("/market/ship", async (req, res) => {
@@ -44,5 +44,5 @@ systemsRouter.get("/market/ship", async (req, res) => {
 	validateMissingParameters({ shipSymbol });	
 
 	const result = await CustomRequests.getMarketAtShipsLocation(shipSymbol);
-	sendSuccessResultResponse(res, result);
+	sendResultResponse(res, result);
 });

@@ -27,6 +27,9 @@ export interface ShipFullCargoPurchase extends ShipSymbol {
 }
 
 export interface ShipExtractionAutomation extends ShipSymbol {
+	stop: boolean;	
+}
+
+export interface ShipExtractionAutomationAll {
 	stop: boolean;
-	survey?: Survey;
 }
