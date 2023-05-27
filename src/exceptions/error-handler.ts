@@ -1,5 +1,6 @@
 import { Response } from 'express';
 import { AppError, HttpCode } from './app-error';
+import { AxiosError, isAxiosError } from 'axios';
 
 class ErrorHandler {
   private isTrustedError(error: Error): boolean {
@@ -33,7 +34,7 @@ class ErrorHandler {
 
     console.log(`Application encountered a critical error. Exiting. Error message: ${error.message}.`);
     process.exit(1);
-  }
+  }  
 }
 
 export const errorHandler = new ErrorHandler();

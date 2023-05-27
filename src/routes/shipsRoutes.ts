@@ -101,14 +101,14 @@ shipsRouter.post("/purchase/cargo/full", async (req, res) => {
 });
 
 shipsRouter.post('/automate/extraction', async (req, res) => {
-	const { shipSymbol, stop, survey }: ShipExtractionAutomation = req.body;
+	const { shipSymbol, stop }: ShipExtractionAutomation = req.body;
 	validateMissingParameters({ shipSymbol });
 
 	if (stop) {
 		await CustomRequests.stopAutomatedExtraction(shipSymbol);
 		sendSuccessResultResponse(res);
 	} else {
-		CustomRequests.startAutomatedExtraction(shipSymbol, survey);
+		CustomRequests.startAutomatedExtraction(shipSymbol);
 		sendSuccessResultResponse(res);
 	}
 });

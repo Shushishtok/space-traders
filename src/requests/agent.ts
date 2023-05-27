@@ -19,10 +19,10 @@ export async function myAgent() {
 	const data = await tryApiRequest(async () => {
 		const result = await agentApi.getMyAgent();
 		const { data } = result;
-		Logger.info(`Got agent data: ${JSON.stringify(data, undefined, 4)}`);
 		return data;
 	}, "Could not agent details");
 
+	Logger.info(`Got agent data: ${JSON.stringify(data, undefined, 4)}`);
 	await AgentModel.upsert({ ...data.data });
 
 	return data;

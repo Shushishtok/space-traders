@@ -15,11 +15,11 @@ export async function register(symbol: string, faction: RegisterRequestFactionEn
 		const result = await defaultApi.register({
 			faction,
 			symbol,
-		});
-		Logger.info(`Registered successfully with agent callsign ${symbol}. The agent belongs to the ${faction} faction!`);
+		});		
 		return result.data;
 	}, "Could not register new agent");
 
+	Logger.info(`Registered successfully with agent callsign ${symbol}. The agent belongs to the ${faction} faction!`);
 	const agentCreatePromise = AgentModel.create({ ...data.data.agent, token: data.data.token });	
 	const contractCreatePromise = ContractModel.create({ ...data.data.contract });
 	const shipCreatePromise = ShipModel.create({ ...data.data.ship });

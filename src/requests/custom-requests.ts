@@ -1,11 +1,10 @@
 import * as Ships from './ships';
 import * as Systems from './system';
-import * as Contracts from "./contracts";
-import { areWaypointsInSameSystem, calculateTimeUntilArrival, getInventoryUnitFromCargo, hasInventoryUnitInCargo, isSameWaypoint, sleep, sortContractDeliveries } from '../utils';
-import { AppError, ErrorNames, HttpCode } from '../exceptions/app-error';
 import { Logger } from '../logger/logger';
 import { AutomatedActions } from '../automation/automated-action';
-import { Survey } from '../packages/spacetraders-sdk';
+import { Ship, Survey } from '../packages/spacetraders-sdk';
+import { canShipSurvey, sleep } from '../utils';
+import { ShipModel, SurveyModel } from '../sequelize/models';
 
 export async function getMarketAtShipsLocation(shipSymbol: string) {
 	const ship = await Ships.getShip(shipSymbol);
@@ -29,18 +28,37 @@ export async function purchaseFullCargo(shipSymbol: string, tradeSymbol: string)
 	}
 }
 
-export async function startAutomatedExtraction(shipSymbol: string, survey?: Survey) {
+export async function startAutomatedExtraction(shipSymbol: string) {
 	const automatedActionName = `AutomatedExtraction-${shipSymbol}`;
 	let shouldRemoveFromAutomation = false; // would not remove from automation until we go into the mining loop.
 	try {
 		AutomatedActions.startAutomatedAction(automatedActionName);
 		Logger.debug(`Started automated mining operation for ship symbol ${shipSymbol}`);
 	
-		shouldRemoveFromAutomation = true;
+		shouldRemoveFromAutomation = true;	
+		
+		const ship = await ShipModel.findByPk(shipSymbol) as Ship;
+		const currentShipWaypointSymbol = ship.nav.waypointSymbol;
+
 		while (AutomatedActions.isAutomationActive(automatedActionName)) {
 			// Orbit
-			await Ships.orbitShip(shipSymbol);		
-	
+			await Ships.orbitShip(shipSymbol);
+
+			// Search for a survey which symbol's equal to the ship's current location
+			let survey = await SurveyModel.findOne({ where: { symbol: currentShipWaypointSymbol } }) as Survey;
+
+			// If there is no survey, check if the ship is able to survey			
+			if (!survey && canShipSurvey(ship)) {
+				const surveyData = await Ships.createSurvey(ship.symbol);
+				survey = surveyData.data.surveys[0];
+				const cooldown = surveyData.data.cooldown.totalSeconds;
+
+				Logger.info(`Ship symbol ${shipSymbol} surveyed during mining loop and will goes into cooldown.`);
+
+				await sleep(cooldown);
+				continue;
+			}
+				
 			// Extract (fetch cooldown and mined units)
 			const extract = await Ships.extractResources(shipSymbol, survey);
 			const cooldown = extract.data.cooldown.totalSeconds;
@@ -74,51 +92,3 @@ export async function stopAutomatedExtraction(shipSymbol: string) {
 		Logger.error(`An error occurred while stopping automated extraction for ship ${shipSymbol}.`);
 	}
 }
-
-// export async function deliverGoodsToContract(shipSymbol: string, contractId: string) {
-// 	let ship = await Ships.getShip(shipSymbol);
-// 	const shipWaypoint = ship.data.nav.waypointSymbol;
-
-// 	const contract = await Contracts.getContract(contractId);
-// 	const deliveryTerms = contract.data.terms.deliver;
-// 	if (!deliveryTerms) {
-// 		throw new AppError({
-// 			description: `Contract has no delivery terms`,
-// 			httpCode: HttpCode.BAD_REQUEST,
-// 			name: ErrorNames.LOGICAL_FAILURE,
-// 		});
-// 	}
-
-// 	// Remove delivery terms that we cannot handle now (missing items in cargo etc)
-// 	const validDeliveryTerms = deliveryTerms.filter(deliveryTerm => {
-// 		const { tradeSymbol } = deliveryTerm;		
-// 		return hasInventoryUnitInCargo(ship, tradeSymbol);
-// 	});
-	
-// 	// Sort deliveries
-// 	const sortedDeliveries = sortContractDeliveries(validDeliveryTerms, shipWaypoint);
-
-// 	// Start handling deliveries
-// 	for (const deliveryTerm of sortedDeliveries) {
-// 		// verify we still have relevant cargo after previous iterations		
-// 		const cargoForContract = getInventoryUnitFromCargo(ship, deliveryTerm.tradeSymbol);		
-// 		if (!cargoForContract) continue;
-
-// 		if (!areWaypointsInSameSystem(shipWaypoint, deliveryTerm.destinationSymbol)) {
-// 			// TODO: add jump gate navigation, handle multi-system deliveries, remove continue
-// 			continue;
-// 		}
-
-// 		// Check if we need to move to the delivery waypoint in the same system
-// 		if (!isSameWaypoint(shipWaypoint, deliveryTerm.destinationSymbol)) {
-// 			const navigation = await Ships.navigateShip(shipSymbol, deliveryTerm.destinationSymbol);
-// 			const arrivalTime = navigation.data.nav.route.arrival;
-// 			await sleep(calculateTimeUntilArrival(arrivalTime));
-// 			await Ships.dockShip(shipSymbol);
-// 			await Ships.refuelShip(shipSymbol);			
-// 		}
-
-// 		// Deliver goods
-// 		await Contracts.deliverContract(contractId, shipSymbol, deliveryTerm.tradeSymbol, cargoForContract.units);
-// 	}
-// }

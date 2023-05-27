@@ -17,11 +17,11 @@ export async function getWaypoint(systemSymbol: string, waypointSymbol: string) 
 
 	const data = await tryApiRequest(async () => {
 		const result = await systemsApi.getWaypoint(systemSymbol, waypointSymbol);
-		const { data } = result;
-		Logger.info(`Got waypoint: ${JSON.stringify(data, undefined, 4)}`);
+		const { data } = result;		
 		return data;
 	}, "Could not get waypoint");
 
+	Logger.info(`Got waypoint: ${JSON.stringify(data, undefined, 4)}`);
 	await WaypointModel.upsert({ ...data.data });
 
 	return data;
@@ -33,11 +33,11 @@ export async function getSystemsWaypoints(systemSymbol: string, page: number, li
 	
 	const data = await tryApiRequest(async () => {
 		const result = await systemsApi.getSystemWaypoints(systemSymbol, page, limit);
-		const { data } = result;
-		Logger.info(`Listing ${limit} waypoints in page ${page} for system ${systemSymbol}: ${JSON.stringify(data, undefined, 4)}`);
+		const { data } = result;		
 		return data;
 	}, "Could not get all waypoints in the system");
 
+	Logger.info(`Listing ${limit} waypoints in page ${page} for system ${systemSymbol}: ${JSON.stringify(data, undefined, 4)}`);
 	const promises = [];
 	for (const waypoint of data.data) {
 		promises.push(WaypointModel.upsert({ ...waypoint }));
@@ -50,12 +50,15 @@ export async function getSystemsWaypoints(systemSymbol: string, page: number, li
 export async function getShipyard(systemSymbol: string, waypointSymbol: string) {
 	const systemsApi = getSystemApi();
 	
-	return await tryApiRequest(async () => {
+	const data = await tryApiRequest(async () => {
 		const result = await systemsApi.getShipyard(systemSymbol, waypointSymbol)
-		const { data } = result;
-		Logger.info(`Got shipyard at waypoint ${waypointSymbol}: ${JSON.stringify(data, undefined, 4)}`);
+		const { data } = result;		
 		return data;
 	}, "Could not get shipyard");
+
+	Logger.info(`Got shipyard at waypoint ${waypointSymbol}: ${JSON.stringify(data, undefined, 4)}`);
+
+	return data;
 }
 
 export async function getMarket(systemSymbol: string, waypointSymbol: string) {
@@ -63,11 +66,11 @@ export async function getMarket(systemSymbol: string, waypointSymbol: string) {
 	
 	const data = await tryApiRequest(async () => {
 		const result = await systemsApi.getMarket(systemSymbol, waypointSymbol)
-		const { data } = result;
-		Logger.info(`Got market at waypoint: ${waypointSymbol}: ${JSON.stringify(data, undefined, 4)}`);
+		const { data } = result;		
 		return data;
 	}, "Could not get market");
 
+	Logger.info(`Got market at waypoint: ${waypointSymbol}: ${JSON.stringify(data, undefined, 4)}`);
 	await MarketModel.upsert({ ...data.data });
 
 	return data;
