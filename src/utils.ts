@@ -6,6 +6,7 @@ import { ContractDeliverGood, GetMyShip200Response, Ship } from "./packages/spac
 import moment from "moment";
 import { Logger } from "./logger/logger";
 import { PaginatedRequest, PaginatedResult } from './interfaces/pagination';
+import { MAX_PAGiNATION_LIMIT, MIN_PAGINATION_LIMIT, MIN_PAGINATION_PAGE } from './consts/general';
 
 export async function sleep(seconds: number) {
 	await new Promise((resolve) => {
@@ -14,17 +15,17 @@ export async function sleep(seconds: number) {
 }
 
 export function validatePagination(page: number, limit: number) {
-	if (limit && (isNaN(limit) || limit < 1 || limit > 20)) {
+	if (limit && (isNaN(limit) || limit < MIN_PAGINATION_LIMIT || limit > MAX_PAGiNATION_LIMIT)) {
 		throw new AppError({
-			description: `Parameter 'limit' must be a number between 1 to 20, or omitted. Value provided: ${limit}`,
+			description: `Parameter 'limit' must be a number between ${MIN_PAGINATION_LIMIT} to ${MAX_PAGiNATION_LIMIT}, or omitted. Value provided: ${limit}`,
 			httpCode: HttpCode.BAD_REQUEST,
 			name: ErrorNames.BAD_PARAMETER,
 		});
 	}
 
-	if (page && (isNaN(page) || page < 1)) {
+	if (page && (isNaN(page) || page < MIN_PAGINATION_PAGE)) {
 		throw new AppError({
-			description: `Parameter 'page' must be 1 or above, or omitted. Value provided: ${page}`,
+			description: `Parameter 'page' must be ${MIN_PAGINATION_PAGE} or above, or omitted. Value provided: ${page}`,
 			httpCode: HttpCode.BAD_REQUEST,
 			name: ErrorNames.BAD_PARAMETER,
 		});

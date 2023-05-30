@@ -6,11 +6,8 @@ export class AutomatedActions {
 
 	static registerAutomatedAction(automatedActionName: string, initialValue = true) {
 		if (this.automationMap.has(automatedActionName)) {
-			throw new AppError({
-				description: `Attempted to register an automated action that was already registered.`,
-				httpCode: 500,
-				name: ErrorNames.LOGICAL_FAILURE,
-			});
+			Logger.debug(`Automated action ${automatedActionName} was already registered, skipping action`);
+			return;
 		}
 
 		this.automationMap.set(automatedActionName, initialValue);
@@ -19,19 +16,12 @@ export class AutomatedActions {
 
 	static stopAutomatedAction(automatedActionName: string) {
 		if (!this.automationMap.has(automatedActionName)) {
-			throw new AppError({
-				description: `Attempted to stop an automated action that was not mapped.`,
-				httpCode: 500,
-				name: ErrorNames.LOGICAL_FAILURE,
-			});
+			Logger.debug(`Automated action ${automatedActionName} is not registered, skipping action.`);
+			return;
 		}
 
 		if (this.automationMap.get(automatedActionName) === false) {
-			throw new AppError({
-				description: `Attempted to stop an automated action that was already stopped.`,
-				httpCode: 500,
-				name: ErrorNames.LOGICAL_FAILURE,
-			});
+			Logger.debug(`Automated action ${automatedActionName} is registered but already stopped. Skipping action.`);
 		}
 
 		this.automationMap.set(automatedActionName, false);
@@ -41,14 +31,12 @@ export class AutomatedActions {
 	static startAutomatedAction(automatedActionName: string) {
 		if (!this.automationMap.has(automatedActionName)) {
 			this.registerAutomatedAction(automatedActionName);
-		} else {
-			if (this.automationMap.get(automatedActionName) === true) {
-				throw new AppError({
-					description: `Attempted to start an automated action that was already started.`,
-					httpCode: 500,
-					name: ErrorNames.LOGICAL_FAILURE,
-				});
-			}
+			return;
+		}
+		
+		if (this.automationMap.get(automatedActionName) === true) {
+			Logger.debug(`Automated action ${automatedActionName} was already started, skipping action.`);
+			return;
 		}
 
 		this.automationMap.set(automatedActionName, true);
@@ -57,11 +45,8 @@ export class AutomatedActions {
 
 	static removeAutomatedAction(automatedActionName: string) {
 		if (!this.automationMap.has(automatedActionName)) {
-			throw new AppError({
-				description: `Attempted to remove an automated action that was not mapped.`,
-				httpCode: 500,
-				name: ErrorNames.LOGICAL_FAILURE,
-			});
+			Logger.debug(`There was no automated action named ${automatedActionName}. Skipping action.`);
+			return;
 		}
 
 		this.automationMap.delete(automatedActionName);
@@ -70,13 +55,7 @@ export class AutomatedActions {
 
 	static isAutomationActive(automatedActionName: string) {
 		const value = this.automationMap.get(automatedActionName);
-		if (value === undefined) {
-			throw new AppError({
-				description: `Attempted to get an automated action that was not mapped.`,
-				httpCode: 500,
-				name: ErrorNames.LOGICAL_FAILURE,
-			});
-		}
+		if (value === undefined) { return false; }
 
 		return value;
 	}

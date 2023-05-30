@@ -25,7 +25,7 @@ export async function register(symbol: string, faction: RegisterRequestFactionEn
 	const agentCreatePromise = AgentModel.create({ ...data.data.agent, token: data.data.token });	
 	const contractCreatePromise = ContractModel.create({ ...data.data.contract });
 	const shipCreatePromise = ShipModel.create({ ...data.data.ship });
-	await Promise.allSettled([agentCreatePromise, contractCreatePromise, shipCreatePromise]);
+	await Promise.all([agentCreatePromise, contractCreatePromise, shipCreatePromise]);
 	
 	return data;
 }

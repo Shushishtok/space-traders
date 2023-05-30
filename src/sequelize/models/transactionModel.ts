@@ -9,7 +9,7 @@ export class TransactionModel extends Model {
 	shipSymbol!: string;
 
 	@Column({ type: DataType.STRING, allowNull: false, })
-	timestamps!: string;
+	timestamp!: string;
 
 	@Column({ type: DataType.INTEGER, allowNull: false, })
 	totalPrice!: number;

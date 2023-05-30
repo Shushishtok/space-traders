@@ -1,9 +1,10 @@
 import { Router } from 'express';
 import * as Systems from '../requests/system';
 import * as CustomRequests from '../requests/custom-requests';
-import { sendResultResponse, validateMissingParameters } from '../utils';
+import { sendResultResponse, validateMissingParameters, validatePagination } from '../utils';
 import { Waypoint, Waypoints } from "../interfaces/systems";
 import { ShipSymbol } from '../interfaces/ships';
+import { PaginatedRequest } from '../interfaces/pagination';
 
 export const systemsRouter = Router();
 
@@ -18,6 +19,7 @@ systemsRouter.get("/waypoint", async (req, res) => {
 systemsRouter.get("/waypoints", async (req, res) => {
 	const { systemSymbol, page, limit }: Waypoints = req.body;
 	validateMissingParameters({ systemSymbol });
+	validatePagination(page, limit);
 
 	const result = await Systems.getSystemsWaypoints(systemSymbol, page, limit);
 	sendResultResponse(res, result);
@@ -44,5 +46,13 @@ systemsRouter.get("/market/ship", async (req, res) => {
 	validateMissingParameters({ shipSymbol });	
 
 	const result = await CustomRequests.getMarketAtShipsLocation(shipSymbol);
+	sendResultResponse(res, result);
+});
+
+systemsRouter.get('/', async (req, res) => {
+	const { page, limit }: PaginatedRequest = req.body;
+	validatePagination(page, limit);	
+
+	const result = await Systems.getSystems(page, limit);
 	sendResultResponse(res, result);
 });

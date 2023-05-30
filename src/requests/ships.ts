@@ -51,7 +51,7 @@ export async function listShips(pagination: PaginatedRequest) {
 	for (const ship of data.data) {
 		promises.push(ShipModel.upsert({ ...ship }))
 	}
-	await Promise.allSettled(promises);	
+	await Promise.all(promises);	
 
 	return data;
 }
@@ -70,7 +70,7 @@ export async function purchaseShip(shipType: ShipType, waypointSymbol: string) {
 	Logger.info(`Purchased ship of type ${shipType} at waypoint ${waypointSymbol} for ${data.data.transaction.price}$. Remaining balance: ${data.data.agent.credits} The new ship's symbol is ${data.data.ship.symbol}.`);	
 	const shipCreatePromise = ShipModel.create({ ...data.data.ship });
 	const agentUpdatePromite = AgentModel.update({ ...data.data.agent }, { where: { symbol: data.data.agent.symbol } });
-	await Promise.allSettled([shipCreatePromise, agentUpdatePromite]);	
+	await Promise.all([shipCreatePromise, agentUpdatePromite]);	
 
 	return data;
 }
@@ -161,16 +161,16 @@ export async function extractResources(shipSymbol: string, survey?: Survey) {
 			if (survey) {
 				const surveyData = await SurveyModel.findByPk(survey.signature);
 				if (surveyData) {
-					await SurveyModel.destroy({ where: { symbol: survey.signature } });
-					Logger.info(`Survey is exhausted or expired. Cleared the survey from the DB.`);
+					await surveyData.destroy();
+					Logger.info(`Survey with signature ${surveyData.signature} is exhausted or expired. Cleared the survey from the DB.`);
 				}
 			}
 		}
 	} else {
-		Logger.info(`Ship with symbol ${shipSymbol} extracted ${result.data.extraction.yield.units} units of ${result.data.extraction.yield.symbol} and entered a cooldown of ${result.data.cooldown.totalSeconds} seconds. Current cargo space: ${result.data.cargo.units}/${result.data.cargo.capacity}`);
+		Logger.info(`Ship with symbol ${shipSymbol} made an ${survey ? 'surveyed extraction' : 'normal extraction'} and extracted ${result.data.extraction.yield.units} units of ${result.data.extraction.yield.symbol} and entered a cooldown of ${result.data.cooldown.totalSeconds} seconds. Current cargo space: ${result.data.cargo.units}/${result.data.cargo.capacity}`);
 		const shipUpdatePromise = ShipModel.update({ cargo: result.data.cargo }, { where: { symbol: shipSymbol } });	
 		const extractionCreatePromise = ExtractionModel.create({ ...result.data.extraction });
-		await Promise.allSettled([shipUpdatePromise, extractionCreatePromise]);		
+		await Promise.all([shipUpdatePromise, extractionCreatePromise]);		
 	}
 
 	return result;
@@ -180,18 +180,18 @@ export async function sellCargo(shipSymbol: string, sellObject: SellCargoRequest
 	const shipsApi = getFleetApi();	
 
 	const data = await tryApiRequest(async () => {
-		const result = await shipsApi.sellCargo(shipSymbol, sellObject)
-		const { data } = result;		
+		const result = await shipsApi.sellCargo(shipSymbol, sellObject);
+		const { data } = result;
 		return data;
 	}, "Could not sell ship cargo");
 
 	if (isErrorCodeData(data)) return data;
-
+	
 	Logger.info(`Ship with symbol ${shipSymbol} sold ${sellObject.units} units of ${sellObject.symbol} successfully for ${data.data.transaction.totalPrice}$. Current balance: ${data.data.agent.credits}`);
 	const shipUpdatePromise = ShipModel.update({ ...data.data.cargo }, { where: { symbol: shipSymbol } });
 	const agentUpdatePromise = AgentModel.update({ credits: data.data.agent.credits }, { where: { symbol: data.data.agent.symbol } });
 	const transctionCreatePromise = TransactionModel.create({ ...data.data.transaction });
-	await Promise.allSettled([shipUpdatePromise, transctionCreatePromise, agentUpdatePromise]);
+	await Promise.all([shipUpdatePromise, transctionCreatePromise, agentUpdatePromise]);
 
 	return data;
 }
@@ -211,7 +211,7 @@ export async function purchaseCargo(shipSymbol: string, purchaseObject: Purchase
 	const shipUpdatePromise = ShipModel.update({ ...data.data.cargo }, { where: { symbol: shipSymbol } });
 	const agentUpdatePromise = AgentModel.update({ credits: data.data.agent.credits }, { where: { symbol: data.data.agent.symbol } });
 	const transctionCreatePromise = TransactionModel.create({ ...data.data.transaction });
-	await Promise.allSettled([shipUpdatePromise, transctionCreatePromise, agentUpdatePromise]);
+	await Promise.all([shipUpdatePromise, transctionCreatePromise, agentUpdatePromise]);
 
 	return data;	
 }
@@ -227,20 +227,17 @@ export async function createSurvey(shipSymbol: string) {
 	
 	if (isErrorCodeData(data)) return data;
 
+	const surveyPromises: Promise<SurveyModel>[] = [];
 	const surveys = data.data.surveys;
 	Logger.info(`Ship with symbol ${shipSymbol} created ${surveys.length} new surveys:`);
 	let counter = 1;
 	for (const survey of surveys) {
 		Logger.info(`Survey #${counter} details: ${JSON.stringify(survey, undefined, 4)}`);
+		surveyPromises.push(SurveyModel.create({ ...survey }));	
 		counter++;
 	}
 	Logger.info(`Ship with symbol ${shipSymbol} entered a cooldown of ${data.data.cooldown.totalSeconds} seconds.`);
-
-	const surveyPromises: Promise<SurveyModel>[] = [];
-	for (const survey of data.data.surveys) {
-		surveyPromises.push(SurveyModel.create({ ...survey }));	
-	}
-	await Promise.allSettled(surveyPromises);
+	await Promise.all(surveyPromises);
 
 	return data;
 }

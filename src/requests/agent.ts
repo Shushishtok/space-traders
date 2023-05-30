@@ -25,7 +25,7 @@ export async function myAgent() {
 	if (isErrorCodeData(data)) return data;
 
 	Logger.info(`Got agent data: ${JSON.stringify(data, undefined, 4)}`);
-	await AgentModel.upsert({ ...data.data });
+	await AgentModel.upsert({ ...data.data, token: process.env.ACCESS_TOKEN });
 
 	return data;
 }

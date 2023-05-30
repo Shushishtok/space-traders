@@ -4,6 +4,7 @@ import * as CustomRequests from '../requests/custom-requests';
 import { sendResultResponse, validateMissingParameters } from '../utils';
 import { PaginatedRequest } from "../interfaces/pagination";
 import { ExtractIntoShip, NavigateShip, PurchaseShip, ShipCargoTransaction, ShipExtractionAutomation, ShipExtractionAutomationAll, ShipFullCargoPurchase, ShipSymbol } from '../interfaces/ships';
+import { ShipModel } from '../sequelize/models';
 
 export const shipsRouter = Router();
 
@@ -114,7 +115,7 @@ shipsRouter.post('/automate/extraction', async (req, res) => {
 shipsRouter.post('/automate/extraction/all', async (req, res) => {
 	const { stop }: ShipExtractionAutomationAll = req.body;
 	
-	const ships = await CustomRequests.getAllShips();	
+	const ships = await ShipModel.findAll();
 	for (const ship of ships) {
 		if (stop) {
 			CustomRequests.stopAutomatedExtraction(ship.symbol);

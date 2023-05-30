@@ -1,6 +1,7 @@
+import { DEFAULT_PAGINATION_LIMIT, DEFAULT_PAGINATION_PAGE } from "../consts/general";
 import { Logger } from "../logger/logger";
 import { SystemsApi } from "../packages/spacetraders-sdk";
-import { MarketModel, WaypointModel } from "../sequelize/models";
+import { MarketModel, SystemModel, WaypointModel } from "../sequelize/models";
 import { isErrorCodeData, tryApiRequest, validatePagination } from "../utils";
 import { createAxiosInstance } from "./create-axios-instance";
 import { createConfiguration } from "./create-configuration";
@@ -29,9 +30,8 @@ export async function getWaypoint(systemSymbol: string, waypointSymbol: string) 
 	return data;
 }
 
-export async function getSystemsWaypoints(systemSymbol: string, page: number, limit: number) {
-	const systemsApi = getSystemApi();
-	validatePagination(page, limit);
+export async function getSystemsWaypoints(systemSymbol: string, page: number = DEFAULT_PAGINATION_PAGE, limit: number = DEFAULT_PAGINATION_LIMIT) {
+	const systemsApi = getSystemApi();	
 	
 	const data = await tryApiRequest(async () => {
 		const result = await systemsApi.getSystemWaypoints(systemSymbol, page, limit);
@@ -46,7 +46,7 @@ export async function getSystemsWaypoints(systemSymbol: string, page: number, li
 	for (const waypoint of data.data) {
 		promises.push(WaypointModel.upsert({ ...waypoint }));
 	}
-	await Promise.allSettled(promises);
+	await Promise.all(promises);
 
 	return data;
 }
@@ -78,6 +78,27 @@ export async function getMarket(systemSymbol: string, waypointSymbol: string) {
 
 	Logger.info(`Got market at waypoint: ${waypointSymbol}: ${JSON.stringify(data, undefined, 4)}`);
 	await MarketModel.upsert({ ...data.data });
+
+	return data;
+}
+
+export async function getSystems(page: number = DEFAULT_PAGINATION_PAGE, limit: number = DEFAULT_PAGINATION_LIMIT) {
+	const systemsApi = getSystemApi();	
+	
+	const data = await tryApiRequest(async () => {
+		const result = await systemsApi.getSystems(page, limit);
+		const { data } = result;		
+		return data;
+	}, "Could not get list systems");
+
+	if (isErrorCodeData(data)) return data;
+
+	Logger.info(`Listing ${limit} systems in page ${page}: ${JSON.stringify(data, undefined, 4)}`);
+	const promises = [];
+	for (const system of data.data) {
+		promises.push(SystemModel.upsert({ ...system }));
+	}
+	await Promise.all(promises);
 
 	return data;
 }

@@ -21,7 +21,7 @@ export class WaypointModel extends Model {
 	@Column({ allowNull: false, type: DataType.JSONB })
 	orbitals!: WaypointOrbital[];	
 
-	@Column({ type: DataType.STRING })
+	@Column({ type: DataType.JSONB })
 	faction!: WaypointFaction;
 
 	@Column({ allowNull: false, type: DataType.JSONB })

@@ -17,6 +17,6 @@ export class AgentModel extends Model {
 	@Column({ allowNull: false, type: DataType.STRING })
 	startingFaction!: string;
 
-	@Column({ allowNull: false, type: DataType.STRING })
+	@Column({ allowNull: false, type: DataType.TEXT })
 	token!: string;
 }

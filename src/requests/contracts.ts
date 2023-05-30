@@ -48,7 +48,7 @@ export async function listContracts(page: number, limit: number) {
 	for (const contract of data.data) {
 		promises.push(ContractModel.upsert({ ...contract }));
 	}
-	await Promise.allSettled(promises);
+	await Promise.all(promises);
 
 	return data;
 }
@@ -113,7 +113,7 @@ export async function deliverContract(contractId: string, shipSymbol: string, tr
 
 	const updateContractPromise = ContractModel.update({ ...data.data.contract }, { where: { id: contractId } });
 	const updateShipPromise = ShipModel.update({ carg: data.data.cargo }, { where: { symbol: shipSymbol } });
-	await Promise.allSettled([updateContractPromise, updateShipPromise]);
+	await Promise.all([updateContractPromise, updateShipPromise]);
 
 	return data;
 }
