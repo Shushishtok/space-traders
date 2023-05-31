@@ -37,7 +37,10 @@ export async function startAutomatedExtraction(shipSymbol: string) {
 	const automatedActionName = `AutomatedExtraction-${shipSymbol}`;
 	let shouldRemoveFromAutomation = false; // would not remove from automation until we go into the mining loop.
 	try {
-		AutomatedActions.startAutomatedAction(automatedActionName);
+		if (!AutomatedActions.startAutomatedAction(automatedActionName)) {
+			Logger.debug(`Could not start automated extraction ${automatedActionName} for ship symbol ${shipSymbol}`);
+			return;
+		};
 		Logger.debug(`Started automated mining operation for ship symbol ${shipSymbol}`);
 	
 		shouldRemoveFromAutomation = true;	
