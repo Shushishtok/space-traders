@@ -9,7 +9,7 @@ const rateLimitsConst: RateLimitConst[] = [
 export class RateLimiter {
 	private static initialized = false;
 	private static rateLimits: RateLimit[] = [];
-	private static queue: ((value: void) => void)[] = [];
+	private static queue: ((value: RateLimit) => void)[] = [];
 	private static isQueueConsuming = false;
 
 	static init() {
@@ -33,8 +33,8 @@ export class RateLimiter {
 		while (this.queue.length > 0 && this.doesTokenExist()) {
 			const queuedPromise = this.queue.shift();
 			if (queuedPromise) {
-				this.consumeToken();
-				queuedPromise();
+				const consumedRateLimit = this.consumeToken();
+				queuedPromise(consumedRateLimit);
 			}
 		}
 
@@ -53,10 +53,10 @@ export class RateLimiter {
 		return rateLimit.currentTokens === 0;
 	}
 
-	static addToQueue() {
+	static addToQueue(): Promise<RateLimit> {
 		if (!this.initialized) this.init();
 
-		const promise = new Promise((resolve) => {
+		const promise: Promise<RateLimit> = new Promise((resolve) => {
 			this.queue.push(resolve);
 		});
 		
@@ -68,11 +68,8 @@ export class RateLimiter {
 	private static consumeToken() {
 		for (const rateLimit of this.rateLimits) {
 			if (!this.isRateLimitEmpty(rateLimit)) {
-				rateLimit.currentTokens -= 1;
-				if (rateLimit.timeout === null) {
-					this.startTokenReplenishTimeout(rateLimit);
-				}
-				return;
+				rateLimit.currentTokens -= 1;				
+				return rateLimit;
 			}
 		}
 
@@ -84,13 +81,13 @@ export class RateLimiter {
 		});
 	}
 
-	private static startTokenReplenishTimeout(rateLimit: RateLimit) {
-		if (rateLimit.timeout !== null) throw new AppError({ description: "Replenish timeout was triggered while a timeout already exists", httpCode: 500, isOperational: false });
+	static startTokenReplenishTimeout(rateLimit: RateLimit) {
+		if (rateLimit.timeout !== null) return;
 
 		rateLimit.timeout = setTimeout(() => {
 			rateLimit.timeout = null;
 			rateLimit.currentTokens = rateLimit.maxTokens;
 			this.consumeQueue();
-		}, rateLimit.interval * 1000 + 250); // 250ms - to allow the server enough time to reply. Reduces chances of hitting a rate limit block.
+		}, rateLimit.interval * 1000);
 	}
 }

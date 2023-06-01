@@ -46,10 +46,10 @@ export function validateMissingParameters(paramsToCheck: object) {
 }
 
 export async function tryApiRequest<T>(tryFunc: () => T, errorMessage: string, allowedErrorCodes?: number[]): Promise<T | number> {
-	await RateLimiter.addToQueue();
+	const consumedRateLimit = await RateLimiter.addToQueue();
 
 	try {
-		const result = await tryFunc();		
+		const result = await tryFunc();
 		return result;
 	} catch (err) {		
 		if (isAxiosError(err)) {
@@ -73,6 +73,8 @@ export async function tryApiRequest<T>(tryFunc: () => T, errorMessage: string, a
 			name: ErrorNames.API_ERROR,
 			avoidPrintingError: true,
 		});
+	} finally {
+		RateLimiter.startTokenReplenishTimeout(consumedRateLimit);
 	}
 }
 
