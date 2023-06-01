@@ -7,6 +7,7 @@ import moment from "moment";
 import { Logger } from "./logger/logger";
 import { PaginatedRequest, PaginatedResult } from './interfaces/pagination';
 import { MAX_PAGiNATION_LIMIT, MIN_PAGINATION_LIMIT, MIN_PAGINATION_PAGE } from './consts/general';
+import { RateLimiter } from './automation/rate-limiter';
 
 export async function sleep(seconds: number) {
 	await new Promise((resolve) => {
@@ -45,6 +46,8 @@ export function validateMissingParameters(paramsToCheck: object) {
 }
 
 export async function tryApiRequest<T>(tryFunc: () => T, errorMessage: string, allowedErrorCodes?: number[]): Promise<T | number> {
+	await RateLimiter.addToQueue();
+
 	try {
 		const result = await tryFunc();		
 		return result;

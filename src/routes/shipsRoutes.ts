@@ -5,6 +5,7 @@ import { sendResultResponse, sleep, validateMissingParameters } from '../utils';
 import { PaginatedRequest } from "../interfaces/pagination";
 import { ExtractIntoShip, NavigateShip, PurchaseShip, ShipCargoTransaction, ShipExtractionAutomation, ShipExtractionAutomationAll, ShipFullCargoPurchase, ShipSymbol } from '../interfaces/ships';
 import { ShipModel } from '../sequelize/models';
+import moment from 'moment';
 
 export const shipsRouter = Router();
 
@@ -135,4 +136,16 @@ shipsRouter.post('/survey', async (req, res) => {
 
 	const result = await Ships.createSurvey(shipSymbol);
 	sendResultResponse(res, result);
+});
+
+// Remove after rate limit testing concludes
+shipsRouter.get('/testBurst', async (req, res) => {
+	const { requests } = req.body;
+	const startTime = moment();
+	for (let index = 0; index < requests; index++) {
+		await Ships.orbitShip("SHUSHLOVELISA-1");
+	}
+	const diff = moment().diff(startTime);
+	const duration = moment.duration(diff);
+	res.status(200).send({duration: duration.asSeconds()});
 });
