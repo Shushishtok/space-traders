@@ -42,11 +42,7 @@ export class RateLimiter {
 	}
 
 	private static doesTokenExist() {
-		for (const rateLimit of this.rateLimits) {
-			if (!this.isRateLimitEmpty(rateLimit)) return true;
-		}
-
-		return false;
+		return this.rateLimits.some(ratelimit => !this.isRateLimitEmpty(ratelimit));		
 	}
 
 	private static isRateLimitEmpty(rateLimit: RateLimit) {

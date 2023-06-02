@@ -1,6 +1,6 @@
 import { Logger } from '../logger/logger';
 import { DefaultApi, RegisterRequestFactionEnum } from '../packages/spacetraders-sdk';
-import { AgentModel, ContractModel, ShipModel } from '../sequelize/models';
+import { AgentModel, ContractModel, ExtractionModel, MarketModel, ShipModel, SurveyModel, SystemModel, TransactionModel, WaypointModel } from '../sequelize/models';
 import { isErrorCodeData, tryApiRequest } from '../utils';
 import { createAxiosInstance } from './create-axios-instance';
 import { createConfiguration } from './create-configuration';
@@ -28,4 +28,16 @@ export async function register(symbol: string, faction: RegisterRequestFactionEn
 	await Promise.all([agentCreatePromise, contractCreatePromise, shipCreatePromise]);
 	
 	return data;
+}
+
+export async function wipeDB() {
+	await AgentModel.sync({ force: true });
+	await ContractModel.sync({ force: true });
+	await ExtractionModel.sync({ force: true });
+	await MarketModel.sync({ force: true });
+	await ShipModel.sync({ force: true });	
+	await SurveyModel.sync({ force: true });
+	await SystemModel.sync({ force: true });
+	await TransactionModel.sync({ force: true });
+	await WaypointModel.sync({ force: true });
 }

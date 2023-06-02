@@ -1,4 +1,3 @@
-import { AppError, ErrorNames, HttpCode } from "../exceptions/app-error";
 import { Logger } from "../logger/logger";
 import { AgentsApi } from "../packages/spacetraders-sdk";
 import { AgentModel } from "../sequelize/models";

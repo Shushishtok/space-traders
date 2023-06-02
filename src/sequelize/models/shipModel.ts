@@ -1,3 +1,4 @@
+import { AppError, ErrorNames } from '../../exceptions/app-error';
 import { ShipNav, ShipCrew, ShipFuel, ShipFrame, ShipReactor, ShipEngine, ShipModule, ShipMount, ShipRegistration, ShipCargo } from '../../packages/spacetraders-sdk';
 import { Table, Model, Column, DataType } from 'sequelize-typescript';
 
@@ -34,5 +35,16 @@ export class ShipModel extends Model {
 	registration!: ShipRegistration;
 
 	@Column({ type: DataType.JSONB, allowNull: false })
-	cargo!: ShipCargo;	
+	cargo!: ShipCargo;
+
+	static async getShip(shipSymbol: string) {
+		const ship = await this.findByPk(shipSymbol);
+		if (!ship) throw new AppError({
+			description: `Could not find ship with ship symbol ${shipSymbol}`,
+			httpCode: 500,
+			name: ErrorNames.DB_ERROR,			
+		});
+
+		return ship;
+	}
 }

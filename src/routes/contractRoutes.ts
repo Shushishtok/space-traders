@@ -1,9 +1,8 @@
 import { Router } from 'express';
 import * as Contracts from '../requests/contracts';
-import * as CustomRequests from "../requests/custom-requests";
 import { sendResultResponse, validateMissingParameters } from '../utils';
 import { PaginatedRequest } from '../interfaces/pagination';
-import { ContractID, DeliverAllContracts, DeliverContact } from '../interfaces/contracts';
+import { ContractID, DeliverContact } from '../interfaces/contracts';
 
 export const contractRouter = Router();
 
@@ -18,7 +17,7 @@ contractRouter.post("/accept", async (req, res) => {
 contractRouter.get("/list", async (req, res) => {
 	const { page, limit }: PaginatedRequest = req.body;	
 
-	const result = await Contracts.listContracts(page, limit);
+	const result = await Contracts.listContracts({ page, limit });
 	sendResultResponse(res, result);
 });
 

@@ -1,11 +1,12 @@
 import { PaginatedRequest } from "../interfaces/pagination";
 import { Logger } from "../logger/logger";
-import { FleetApi, PurchaseCargoRequest, SellCargoRequest, Ship, ShipType, Survey } from "../packages/spacetraders-sdk";
+import { FleetApi, PurchaseCargoRequest, SellCargoRequest, ShipType, Survey } from "../packages/spacetraders-sdk";
 import { AgentModel, ExtractionModel, ShipModel, SurveyModel, TransactionModel } from "../sequelize/models";
 import { calculateTimeUntilArrival, isErrorCodeData, tryApiRequest, validatePagination } from "../utils";
 import { createAxiosInstance } from "./create-axios-instance";
 import { createConfiguration } from "./create-configuration";
 import { shipSurveyExhaustedError, shipSurveyExpirationError } from "../consts/error-codes";
+import { DEFAULT_PAGINATION_LIMIT, DEFAULT_PAGINATION_PAGE } from "../consts/general";
 
 function getFleetApi() {
 	const configuration = createConfiguration();
@@ -32,7 +33,7 @@ export async function getShip(shipSymbol: string) {
 }
 
 export async function listShips(pagination: PaginatedRequest) {	
-	const { page, limit } = pagination;
+	const { page = DEFAULT_PAGINATION_PAGE, limit = DEFAULT_PAGINATION_LIMIT } = pagination;
 	validatePagination(page, limit);
 	
 	const shipsApi = getFleetApi();

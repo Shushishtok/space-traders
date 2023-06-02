@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { register } from '../requests/general';
-import { sendResultResponse } from '../utils';
-import { RegisterRequestFactionEnum } from '../packages/spacetraders-sdk';
+import * as General from '../requests/general';
+import { sendResultResponse, validateMissingParameters } from '../utils';
+import { RegisterBody } from '../interfaces/general';
 
 export const defaultRouter = Router();
 
@@ -10,7 +10,18 @@ defaultRouter.get("/", (req, res) => {
 });
 
 defaultRouter.post("/start-game", async (req, res) => {	
-	const { symbol, faction }: { symbol: string, faction: RegisterRequestFactionEnum } = req.body;
-	const result = await register(symbol, faction);
+	const { symbol, faction, wipeDatabase = false }: RegisterBody = req.body;
+	validateMissingParameters({ symbol, faction });
+
+	if (wipeDatabase === true) {
+		General.wipeDB();
+	}
+
+	const result = await General.register(symbol, faction);
 	sendResultResponse(res, result);
 });
+
+defaultRouter.post('/wipe-database', async (req, res) => {
+	const result = await General.wipeDB();
+	sendResultResponse(res, result);
+})

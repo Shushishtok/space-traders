@@ -1,4 +1,6 @@
+import { DEFAULT_PAGINATION_LIMIT, DEFAULT_PAGINATION_PAGE } from "../consts/general";
 import { AppError, ErrorNames } from "../exceptions/app-error";
+import { PaginatedRequest } from "../interfaces/pagination";
 import { Logger } from "../logger/logger";
 import { ContractsApi } from "../packages/spacetraders-sdk";
 import { ContractModel, ShipModel } from "../sequelize/models";
@@ -30,7 +32,8 @@ export async function acceptContract(contractId: string) {
 	return data;
 }
 
-export async function listContracts(page: number, limit: number) {
+export async function listContracts(pagination: PaginatedRequest) {
+	const { page = DEFAULT_PAGINATION_PAGE, limit = DEFAULT_PAGINATION_LIMIT } = pagination;
 	const contractsApi = getContractsApi();
 	validatePagination(page, limit);
 	
@@ -109,7 +112,7 @@ export async function deliverContract(contractId: string, shipSymbol: string, tr
 
 		if (deliveryTerms.every(deliveryTerm => deliveryTerm.unitsFulfilled >= deliveryTerm.unitsRequired)) {
 			Logger.info(`Contract ${contractId} is ready to be fulfilled!! Call the fulfill endpoint to fulfill it.`);
-		};
+		}
 
 	const updateContractPromise = ContractModel.update({ ...data.data.contract }, { where: { id: contractId } });
 	const updateShipPromise = ShipModel.update({ carg: data.data.cargo }, { where: { symbol: shipSymbol } });

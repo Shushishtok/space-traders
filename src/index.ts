@@ -1,4 +1,4 @@
-import express, { NextFunction, Request, Response } from 'express';
+import express, { Request, Response } from 'express';
 import 'express-async-errors';
 import 'reflect-metadata';
 import bodyParser from 'body-parser';
@@ -10,7 +10,7 @@ import connection from './sequelize/connection';
 async function bootstrap() {
 	dotenv.config();
 
-	process.on('unhandledRejection', (reason: Error | any) => {
+	process.on('unhandledRejection', (reason: Error) => {
 		console.log(`Unhandled Rejection: ${reason?.message ?? reason}`);
 		throw new Error(reason?.message ?? reason);
 	});
@@ -34,7 +34,7 @@ async function bootstrap() {
 	app.use('/contracts', contractRoutes);
 
 	// Error handler: must be last!
-	app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
+	app.use((error: Error, req: Request, res: Response) => {
 		errorHandler.handleError(error, res);
 	});
 

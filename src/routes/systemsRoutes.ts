@@ -21,7 +21,7 @@ systemsRouter.get("/waypoints", async (req, res) => {
 	validateMissingParameters({ systemSymbol });
 	validatePagination(page, limit);
 
-	const result = await Systems.getSystemsWaypoints(systemSymbol, page, limit);
+	const result = await Systems.listWaypointsInSystem(systemSymbol, { page, limit });
 	sendResultResponse(res, result);
 });
 
@@ -53,6 +53,11 @@ systemsRouter.get('/', async (req, res) => {
 	const { page, limit }: PaginatedRequest = req.body;
 	validatePagination(page, limit);	
 
-	const result = await Systems.getSystems(page, limit);
+	const result = await Systems.listSystems({ page, limit });
+	sendResultResponse(res, result);
+});
+
+systemsRouter.get('/cache/all', async (req, res) => {
+	const result = await CustomRequests.cacheAllSystems();
 	sendResultResponse(res, result);
 });

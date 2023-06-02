@@ -154,7 +154,7 @@ export function isErrorCodeData<T>(data: T | number): data is number {
 
 export async function paginateResults<T>(paginationFunc: (pagination: PaginatedRequest) => T) {
 	const items = [];
-	let pagination: PaginatedRequest = { limit: 20, page: 1 };
+	const pagination: PaginatedRequest = { limit: 20, page: 1 };
 	let paginationFinished = false;
 	let attempts = 0;
 	while (!paginationFinished || attempts > 500) {

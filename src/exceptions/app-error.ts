@@ -4,7 +4,8 @@ export enum ErrorNames {
 	BAD_PARAMETER = "Bad Parameter",
 	API_ERROR = "API Error",
 	MISSING_PARAMETER = "Missing Parameter",
-	LOGICAL_FAILURE = "Logical Failure",	
+	LOGICAL_FAILURE = "Logical Failure",
+	DB_ERROR = "DB Error",
 }
 
 export enum HttpCode {

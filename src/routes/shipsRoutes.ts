@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as Ships from '../requests/ships';
 import * as CustomRequests from '../requests/custom-requests';
-import { sendResultResponse, sleep, validateMissingParameters } from '../utils';
+import { sendResultResponse, validateMissingParameters } from '../utils';
 import { PaginatedRequest } from "../interfaces/pagination";
 import { ExtractIntoShip, NavigateShip, PurchaseShip, ShipCargoTransaction, ShipExtractionAutomation, ShipExtractionAutomationAll, ShipFullCargoPurchase, ShipSymbol } from '../interfaces/ships';
 import { ShipModel } from '../sequelize/models';
@@ -85,6 +85,14 @@ shipsRouter.post("/sell", async (req, res) => {
 	sendResultResponse(res, result);
 });
 
+shipsRouter.post('/sell/all', async (req, res) => {
+	const { shipSymbol }: ShipSymbol = req.body;
+	validateMissingParameters({ shipSymbol });
+
+	const result = await CustomRequests.sellAllCargo(shipSymbol);
+	sendResultResponse(res, result);
+});
+
 shipsRouter.post("/purchase/cargo", async (req, res) => {
 	const { shipSymbol, unitSymbol, unitCount }: ShipCargoTransaction = req.body;
 	validateMissingParameters({ shipSymbol, unitSymbol, unitCount });
@@ -97,8 +105,8 @@ shipsRouter.post("/purchase/cargo/full", async (req, res) => {
 	const { shipSymbol, unitSymbol }: ShipFullCargoPurchase = req.body;
 	validateMissingParameters({ shipSymbol, unitSymbol });
 
-	await CustomRequests.purchaseFullCargo(shipSymbol, unitSymbol);
-	sendResultResponse(res);
+	const result = await CustomRequests.purchaseFullCargo(shipSymbol, unitSymbol);
+	sendResultResponse(res, result);
 });
 
 shipsRouter.post('/automate/extraction', async (req, res) => {
@@ -121,9 +129,7 @@ shipsRouter.post('/automate/extraction/all', async (req, res) => {
 		if (stop) {
 			CustomRequests.stopAutomatedExtraction(ship.symbol);
 		} else {
-			CustomRequests.startAutomatedExtraction(ship.symbol);
-			// Delayed throttling per ship
-			await sleep(1);
+			CustomRequests.startAutomatedExtraction(ship.symbol);			
 		}
 	}
 
@@ -138,7 +144,6 @@ shipsRouter.post('/survey', async (req, res) => {
 	sendResultResponse(res, result);
 });
 
-// Remove after rate limit testing concludes
 shipsRouter.get('/testBurst', async (req, res) => {
 	const { requests } = req.body;
 	const startTime = moment();

@@ -1,8 +1,9 @@
 import { DEFAULT_PAGINATION_LIMIT, DEFAULT_PAGINATION_PAGE } from "../consts/general";
+import { PaginatedRequest } from "../interfaces/pagination";
 import { Logger } from "../logger/logger";
 import { SystemsApi } from "../packages/spacetraders-sdk";
 import { MarketModel, SystemModel, WaypointModel } from "../sequelize/models";
-import { isErrorCodeData, tryApiRequest, validatePagination } from "../utils";
+import { isErrorCodeData, tryApiRequest } from "../utils";
 import { createAxiosInstance } from "./create-axios-instance";
 import { createConfiguration } from "./create-configuration";
 
@@ -30,7 +31,8 @@ export async function getWaypoint(systemSymbol: string, waypointSymbol: string) 
 	return data;
 }
 
-export async function getSystemsWaypoints(systemSymbol: string, page: number = DEFAULT_PAGINATION_PAGE, limit: number = DEFAULT_PAGINATION_LIMIT) {
+export async function listWaypointsInSystem(systemSymbol: string, pagination: PaginatedRequest) {
+	const { page = DEFAULT_PAGINATION_PAGE, limit = DEFAULT_PAGINATION_LIMIT } = pagination;
 	const systemsApi = getSystemApi();	
 	
 	const data = await tryApiRequest(async () => {
@@ -82,7 +84,8 @@ export async function getMarket(systemSymbol: string, waypointSymbol: string) {
 	return data;
 }
 
-export async function getSystems(page: number = DEFAULT_PAGINATION_PAGE, limit: number = DEFAULT_PAGINATION_LIMIT) {
+export async function listSystems(pagination: PaginatedRequest) {
+	const { page = DEFAULT_PAGINATION_PAGE, limit = DEFAULT_PAGINATION_LIMIT } = pagination;
 	const systemsApi = getSystemApi();	
 	
 	const data = await tryApiRequest(async () => {
