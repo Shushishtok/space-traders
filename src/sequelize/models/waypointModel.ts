@@ -28,5 +28,5 @@ export class WaypointModel extends Model {
 	traits!: WaypointTrait[];
 
 	@Column({ type: DataType.JSONB })
-	chart!: Chart
+	chart!: Chart;
 }

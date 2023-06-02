@@ -7,7 +7,7 @@ export class SurveyModel extends Model {
 	signature!: string;
 
 	@Column({ type: DataType.JSONB, allowNull: false })
-	deposits!: SurveyDeposit[]
+	deposits!: SurveyDeposit[];
 
 	@Column({ type: DataType.STRING, allowNull: false })
 	expiration!: string;

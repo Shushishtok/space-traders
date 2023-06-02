@@ -41,7 +41,7 @@ export class Logger {
 
 		if (lines >= LOG_LINES_MAX) {
 			if (fs.existsSync(OLD_LOG_PATH)) {
-				fs.rmSync(OLD_LOG_PATH)
+				fs.rmSync(OLD_LOG_PATH);
 			}
 			fs.writeFileSync(OLD_LOG_PATH, data);
 			fs.rmSync(LOG_PATH);

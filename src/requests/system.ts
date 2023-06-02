@@ -57,7 +57,7 @@ export async function getShipyard(systemSymbol: string, waypointSymbol: string) 
 	const systemsApi = getSystemApi();
 	
 	const data = await tryApiRequest(async () => {
-		const result = await systemsApi.getShipyard(systemSymbol, waypointSymbol)
+		const result = await systemsApi.getShipyard(systemSymbol, waypointSymbol);
 		const { data } = result;		
 		return data;
 	}, "Could not get shipyard");
@@ -71,7 +71,7 @@ export async function getMarket(systemSymbol: string, waypointSymbol: string) {
 	const systemsApi = getSystemApi();
 	
 	const data = await tryApiRequest(async () => {
-		const result = await systemsApi.getMarket(systemSymbol, waypointSymbol)
+		const result = await systemsApi.getMarket(systemSymbol, waypointSymbol);
 		const { data } = result;		
 		return data;
 	}, "Could not get market");

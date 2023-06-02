@@ -11,7 +11,7 @@ import { RateLimiter } from './automation/rate-limiter';
 
 export async function sleep(seconds: number) {
 	await new Promise((resolve) => {
-		setTimeout(resolve, seconds * 1000)
+		setTimeout(resolve, seconds * 1000);
 	});
 }
 

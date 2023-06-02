@@ -50,7 +50,7 @@ export async function listShips(pagination: PaginatedRequest) {
 
 	const promises: Promise<[ShipModel, boolean | null]>[] = [];
 	for (const ship of data.data) {
-		promises.push(ShipModel.upsert({ ...ship }))
+		promises.push(ShipModel.upsert({ ...ship }));
 	}
 	await Promise.all(promises);	
 
@@ -150,7 +150,7 @@ export async function extractResources(shipSymbol: string, survey?: Survey) {
 	const allowedErrorCodes = [shipSurveyExpirationError, shipSurveyExhaustedError];
 
 	const result = await tryApiRequest(async () => {
-		const result = await shipsApi.extractResources(shipSymbol, { survey })
+		const result = await shipsApi.extractResources(shipSymbol, { survey });
 		const { data } = result;
 		return data;
 	}, "Could not extract resources",

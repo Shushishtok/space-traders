@@ -24,4 +24,4 @@ defaultRouter.post("/start-game", async (req, res) => {
 defaultRouter.post('/wipe-database', async (req, res) => {
 	const result = await General.wipeDB();
 	sendResultResponse(res, result);
-})
+});
