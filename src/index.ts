@@ -4,7 +4,7 @@ import 'reflect-metadata';
 import bodyParser from 'body-parser';
 import { agentRoutes, contractRoutes, defaultRoutes, shipsRoutes, systemRoutes } from './routes';
 import dotenv from 'dotenv';
-import { errorHandler } from './exceptions/error-handler';
+import { ErrorHandler } from './exceptions/error-handler';
 import connection from './sequelize/connection';
 
 async function bootstrap() {
@@ -17,7 +17,7 @@ async function bootstrap() {
 
 	process.on('uncaughtException', (error: Error) => {
 		console.log(`Uncaught Exception: ${error.message}`);  
-		errorHandler.handleError(error);
+		ErrorHandler.handleError(error);
 	});
 
 	const app = express();
@@ -35,7 +35,7 @@ async function bootstrap() {
 
 	// Error handler: must be last!
 	app.use((error: Error, req: Request, res: Response) => {
-		errorHandler.handleError(error, res);
+		ErrorHandler.handleError(error, res);
 	});
 
 	await connection.sync();

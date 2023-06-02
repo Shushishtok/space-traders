@@ -4,23 +4,23 @@ import { SystemFaction, SystemType, SystemWaypoint } from '../../packages/spacet
 @Table({ tableName: 'systems' })
 export class SystemModel extends Model {
 	@Column({ allowNull: false, primaryKey: true, type: DataType.STRING })
-	symbol!: string;
+		symbol!: string;
 
 	@Column({ allowNull: false, type: DataType.STRING })
-	sectorSymbol!: string;
+		sectorSymbol!: string;
 
 	@Column({ allowNull: false, type: DataType.STRING })
-	type!: SystemType;
+		type!: SystemType;
 
 	@Column({ allowNull: false, type: DataType.INTEGER })	
-	x!: number;
+		x!: number;
 
 	@Column({ allowNull: false, type: DataType.INTEGER })
-	y!: number;
+		y!: number;
 
 	@Column({ allowNull: false, type: DataType.JSONB })
-	waypoints!: SystemWaypoint[];	
+		waypoints!: SystemWaypoint[];	
 
 	@Column({ allowNull: false, type: DataType.JSONB })
-	factions!: SystemFaction[];
+		factions!: SystemFaction[];
 }

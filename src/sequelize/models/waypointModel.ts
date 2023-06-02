@@ -4,29 +4,29 @@ import { Chart, SystemType, WaypointFaction, WaypointOrbital, WaypointTrait } fr
 @Table({ tableName: 'waypoints' })
 export class WaypointModel extends Model {
 	@Column({ allowNull: false, primaryKey: true, type: DataType.STRING })
-	symbol!: string;
+		symbol!: string;
 
 	@Column({ allowNull: false, type: DataType.STRING })
-	systemSymbol!: string;
+		systemSymbol!: string;
 
 	@Column({ allowNull: false, type: DataType.STRING })
-	type!: SystemType;
+		type!: SystemType;
 
 	@Column({ allowNull: false, type: DataType.INTEGER })	
-	x!: number;
+		x!: number;
 
 	@Column({ allowNull: false, type: DataType.INTEGER })
-	y!: number;
+		y!: number;
 
 	@Column({ allowNull: false, type: DataType.JSONB })
-	orbitals!: WaypointOrbital[];	
+		orbitals!: WaypointOrbital[];	
 
 	@Column({ type: DataType.JSONB })
-	faction!: WaypointFaction;
+		faction!: WaypointFaction;
 
 	@Column({ allowNull: false, type: DataType.JSONB })
-	traits!: WaypointTrait[];
+		traits!: WaypointTrait[];
 
 	@Column({ type: DataType.JSONB })
-	chart!: Chart;
+		chart!: Chart;
 }

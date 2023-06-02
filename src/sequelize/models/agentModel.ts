@@ -3,20 +3,20 @@ import { Table, Model, Column, DataType } from 'sequelize-typescript';
 @Table({ tableName: "agents" })
 export class AgentModel extends Model {
 	@Column({ allowNull: false, type: DataType.STRING })
-	accountId!: string;
+		accountId!: string;
 
 	@Column({ allowNull: false, primaryKey: true, type: DataType.STRING })
-	symbol!: string;
+		symbol!: string;
 
 	@Column({ allowNull: false, type: DataType.STRING })
-	headquarters!: string;
+		headquarters!: string;
 
 	@Column({ allowNull: false, type: DataType.INTEGER })
-	credits!: number;
+		credits!: number;
 
 	@Column({ allowNull: false, type: DataType.STRING })
-	startingFaction!: string;
+		startingFaction!: string;
 
 	@Column({ allowNull: false, type: DataType.TEXT })
-	token!: string;
+		token!: string;
 }

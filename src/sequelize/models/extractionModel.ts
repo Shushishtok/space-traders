@@ -4,8 +4,8 @@ import { Extraction } from '../../packages/spacetraders-sdk';
 @Table({ tableName: 'extractions' })
 export class ExtractionModel extends Model {
 	@Column({ type: DataType.STRING })	
-	shipSymbol!: string;
+		shipSymbol!: string;
 
 	@Column({ type: DataType.JSONB })
-	yield!: Extraction;
+		yield!: Extraction;
 }

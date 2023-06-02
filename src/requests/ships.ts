@@ -154,7 +154,7 @@ export async function extractResources(shipSymbol: string, survey?: Survey) {
 		const { data } = result;
 		return data;
 	}, "Could not extract resources",
-		allowedErrorCodes,
+	allowedErrorCodes
 	);
 
 	if (isErrorCodeData(result)) {

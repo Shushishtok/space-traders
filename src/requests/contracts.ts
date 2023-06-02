@@ -85,34 +85,34 @@ export async function deliverContract(contractId: string, shipSymbol: string, tr
 	if (isErrorCodeData(data)) return data;
 
 	const deliveryTerms = data.data.contract.terms.deliver;		
-		if (!deliveryTerms) {
-			throw new AppError({
-				description: `No delivery terms were found for contractId ${contractId}. This is likely to be a server side error.`,
-				httpCode: 500,
-				isOperational: false,
-				name: ErrorNames.LOGICAL_FAILURE,
-			});
-		}
+	if (!deliveryTerms) {
+		throw new AppError({
+			description: `No delivery terms were found for contractId ${contractId}. This is likely to be a server side error.`,
+			httpCode: 500,
+			isOperational: false,
+			name: ErrorNames.LOGICAL_FAILURE,
+		});
+	}
 
-		const deliveredUnitsTerms = deliveryTerms.find(term => term.tradeSymbol === tradeSymbol);
-		if (!deliveredUnitsTerms) {
-			throw new AppError({
-				description: `No delivery terms for resource of type ${tradeSymbol} were found for contractId ${contractId}. This is likely to be as erver side error.`,
-				httpCode: 500,
-				isOperational: false,
-				name: ErrorNames.LOGICAL_FAILURE,
-			});
-		}		
-		const { unitsFulfilled, unitsRequired } = deliveredUnitsTerms;
+	const deliveredUnitsTerms = deliveryTerms.find(term => term.tradeSymbol === tradeSymbol);
+	if (!deliveredUnitsTerms) {
+		throw new AppError({
+			description: `No delivery terms for resource of type ${tradeSymbol} were found for contractId ${contractId}. This is likely to be as erver side error.`,
+			httpCode: 500,
+			isOperational: false,
+			name: ErrorNames.LOGICAL_FAILURE,
+		});
+	}		
+	const { unitsFulfilled, unitsRequired } = deliveredUnitsTerms;
 
-		Logger.info(`Delivered ${units} units of ${tradeSymbol} to contract ${contractId}. In total, ${unitsFulfilled} units out of ${unitsRequired} required were delivered.`);
-		if (unitsFulfilled >= unitsRequired) {
-			Logger.info(`Completed delivery of ${tradeSymbol} for contractId ${contractId}!`);
-		}
+	Logger.info(`Delivered ${units} units of ${tradeSymbol} to contract ${contractId}. In total, ${unitsFulfilled} units out of ${unitsRequired} required were delivered.`);
+	if (unitsFulfilled >= unitsRequired) {
+		Logger.info(`Completed delivery of ${tradeSymbol} for contractId ${contractId}!`);
+	}
 
-		if (deliveryTerms.every(deliveryTerm => deliveryTerm.unitsFulfilled >= deliveryTerm.unitsRequired)) {
-			Logger.info(`Contract ${contractId} is ready to be fulfilled!! Call the fulfill endpoint to fulfill it.`);
-		}
+	if (deliveryTerms.every(deliveryTerm => deliveryTerm.unitsFulfilled >= deliveryTerm.unitsRequired)) {
+		Logger.info(`Contract ${contractId} is ready to be fulfilled!! Call the fulfill endpoint to fulfill it.`);
+	}
 
 	const updateContractPromise = ContractModel.update({ ...data.data.contract }, { where: { id: contractId } });
 	const updateShipPromise = ShipModel.update({ carg: data.data.cargo }, { where: { symbol: shipSymbol } });

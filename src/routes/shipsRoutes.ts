@@ -152,5 +152,5 @@ shipsRouter.get('/testBurst', async (req, res) => {
 	}
 	const diff = moment().diff(startTime);
 	const duration = moment.duration(diff);
-	res.status(200).send({duration: duration.asSeconds()});
+	res.status(200).send({ duration: duration.asSeconds() });
 });

@@ -5,37 +5,37 @@ import { Table, Model, Column, DataType } from 'sequelize-typescript';
 @Table({ timestamps: false, tableName: 'ships' })
 export class ShipModel extends Model {
 	@Column({ primaryKey: true, type: DataType.STRING, allowNull: false })
-	symbol!: string;
+		symbol!: string;
 
 	@Column({ type: DataType.JSONB, allowNull: false })
-	nav!: ShipNav;
+		nav!: ShipNav;
 
 	@Column({ type: DataType.JSONB, allowNull: false })
-	crew!: ShipCrew;
+		crew!: ShipCrew;
 
 	@Column({ type: DataType.JSONB, allowNull: false })
-	fuel!: ShipFuel;
+		fuel!: ShipFuel;
 
 	@Column({ type: DataType.JSONB, allowNull: false })
-	frame!: ShipFrame;
+		frame!: ShipFrame;
 
 	@Column({ type: DataType.JSONB, allowNull: false })
-	reactor!: ShipReactor;
+		reactor!: ShipReactor;
 
 	@Column({ type: DataType.JSONB, allowNull: false })
-	engine!: ShipEngine;
+		engine!: ShipEngine;
 
 	@Column({ type: DataType.JSONB, allowNull: false })
-	modules!: ShipModule[];
+		modules!: ShipModule[];
 
 	@Column({ type: DataType.JSONB, allowNull: false })
-	mounts!: ShipMount[];
+		mounts!: ShipMount[];
 
 	@Column({ type: DataType.JSONB, allowNull: false })
-	registration!: ShipRegistration;
+		registration!: ShipRegistration;
 
 	@Column({ type: DataType.JSONB, allowNull: false })
-	cargo!: ShipCargo;
+		cargo!: ShipCargo;
 
 	static async getShip(shipSymbol: string) {
 		const ship = await this.findByPk(shipSymbol);

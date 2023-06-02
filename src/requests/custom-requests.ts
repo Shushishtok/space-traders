@@ -29,10 +29,10 @@ export async function purchaseFullCargo(shipSymbol: string, tradeSymbol: string)
 		const purchaseResult = await Ships.purchaseCargo(shipSymbol, { symbol: tradeSymbol, units: remainingCapacity });
 		if (isErrorCodeData(purchaseResult)) return null;
 		return purchaseResult;
-	} else {
-		Logger.error(`Ship had no space in its cargo to purchase additional units of ${tradeSymbol}.`);
-		return null;
-	}
+	} 
+	Logger.error(`Ship had no space in its cargo to purchase additional units of ${tradeSymbol}.`);
+	return null;
+	
 }
 
 export async function sellAllCargo(shipSymbol: string) {
@@ -67,7 +67,7 @@ export async function sellAllCargo(shipSymbol: string) {
 
 export async function startAutomatedExtraction(shipSymbol: string) {
 	const automatedActionName = `AutomatedExtraction-${shipSymbol}`;
-	let shouldRemoveFromAutomation = false; // would not remove from automation until we go into the mining loop.
+	let shouldRemoveFromAutomation = false; // Would not remove from automation until we go into the mining loop.
 	try {
 		if (!AutomatedActions.startAutomatedAction(automatedActionName)) {
 			Logger.debug(`Could not start automated extraction ${automatedActionName} for ship symbol ${shipSymbol}`);
@@ -144,7 +144,7 @@ export async function getAllShips() {
 	while (!paginationFinished || attempts > 500) {
 		attempts += 1;
 		const result = await Ships.listShips(pagination);
-		if (isErrorCodeData(result)) { // shouldn't occur, but just in case
+		if (isErrorCodeData(result)) { // Shouldn't occur, but just in case
 			paginationFinished = true;
 			continue;
 		}
@@ -159,7 +159,7 @@ export async function getAllShips() {
 		await sleep(1);
 	}	
 
-	//const ships = await paginateResults(Ships.listShips);
+	//Const ships = await paginateResults(Ships.listShips);
 	Logger.info(`Got a total of ${ships.length} ships.`);
 	return ships;
 }
@@ -170,7 +170,7 @@ export async function cacheAllSystems() {
 	let paginationFinished = false;	
 	while (!paginationFinished) {		
 		const result = await Systems.listSystems(pagination);
-		if (isErrorCodeData(result)) { // shouldn't occur, but just in case
+		if (isErrorCodeData(result)) { // Shouldn't occur, but just in case
 			paginationFinished = true;
 			continue;
 		}

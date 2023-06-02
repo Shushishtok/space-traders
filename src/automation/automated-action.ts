@@ -53,7 +53,9 @@ export class AutomatedActions {
 
 	static isAutomationActive(automatedActionName: string) {
 		const value = this.automationMap.get(automatedActionName);
-		if (value === undefined) { return false; }
+		if (value === undefined) {
+			return false; 
+		}
 
 		return value;
 	}

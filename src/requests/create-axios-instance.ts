@@ -17,7 +17,7 @@ function addMiddlewares(axiosInstance: AxiosInstance) {
 function addRateLimitMiddleware(axiosInstance: AxiosInstance) {
 	// Rate limit retry mechanism
 	axiosInstance.interceptors.response.use(undefined, async (error: AxiosError) => {
-		if (error.response?.status === 429) { // rate limit
+		if (error.response?.status === 429) { // Rate limit
 			if (!error.config) return;
 
 			const retryAfter = error.response.headers['retry-after'];			

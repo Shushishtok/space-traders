@@ -5,7 +5,6 @@ import { isAxiosError } from "axios";
 import { ContractDeliverGood, GetMyShip200Response, Ship } from "./packages/spacetraders-sdk";
 import moment from "moment";
 import { Logger } from "./logger/logger";
-import { PaginatedRequest, PaginatedResult } from './interfaces/pagination';
 import { MAX_PAGiNATION_LIMIT, MIN_PAGINATION_LIMIT, MIN_PAGINATION_PAGE } from './consts/general';
 import { RateLimiter } from './automation/rate-limiter';
 
@@ -152,28 +151,28 @@ export function isErrorCodeData<T>(data: T | number): data is number {
 	return typeof data === "number"; 
 }
 
-export async function paginateResults<T>(paginationFunc: (pagination: PaginatedRequest) => T) {
-	const items = [];
-	const pagination: PaginatedRequest = { limit: 20, page: 1 };
-	let paginationFinished = false;
-	let attempts = 0;
-	while (!paginationFinished || attempts > 500) {
-		attempts += 1;
-		const result = await paginationFunc(pagination) as PaginatedResult<T>;
-		if (isErrorCodeData(result)) { // shouldn't occur, but just in case
-			paginationFinished = true;
-			continue;
-		}
+// export async function paginateResults<T>(paginationFunc: (pagination: PaginatedRequest) => T) {
+// 	const items = [];
+// 	const pagination: PaginatedRequest = { limit: 20, page: 1 };
+// 	let paginationFinished = false;
+// 	let attempts = 0;
+// 	while (!paginationFinished || attempts > 500) {
+// 		attempts += 1;
+// 		const result = await paginationFunc(pagination) as PaginatedResult<T>;
+// 		if (isErrorCodeData(result)) { // Shouldn't occur, but just in case
+// 			paginationFinished = true;
+// 			continue;
+// 		}
 
-		if (result.meta.total <= (pagination.page * pagination.limit)) {
-			paginationFinished = true;
-		} else {
-			pagination.page += 1;
-		}
+// 		if (result.meta.total <= (pagination.page * pagination.limit)) {
+// 			paginationFinished = true;
+// 		} else {
+// 			pagination.page += 1;
+// 		}
 
-		items.push(...result.data);
-		await sleep(1);
-	}
+// 		items.push(...result.data);
+// 		await sleep(1);
+// 	}
 
-	return items;
-}
+// 	return items;
+// }

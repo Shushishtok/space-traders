@@ -5,22 +5,22 @@ import { AppError, ErrorNames } from '../../exceptions/app-error';
 @Table({ tableName: 'markets' })
 export class MarketModel extends Model {
 	@Column({ allowNull: false, primaryKey: true, type: DataType.STRING })
-	symbol!: string;
+		symbol!: string;
 
 	@Column({ allowNull: false, type: DataType.JSONB })
-	exports!: TradeGood[];
+		exports!: TradeGood[];
 
 	@Column({ allowNull: false, type: DataType.JSONB })
-	imports!: TradeGood[];
+		imports!: TradeGood[];
 
 	@Column({ allowNull: false, type: DataType.JSONB })
-	exchange!: TradeGood[];
+		exchange!: TradeGood[];
 
 	@Column({ type: DataType.JSONB })
-	transactions!: MarketTransaction[];
+		transactions!: MarketTransaction[];
 
 	@Column({ type: DataType.JSONB })
-	tradeGoods!: MarketTradeGood[];
+		tradeGoods!: MarketTradeGood[];
 
 	static async getMarket(waypointSymbol: string) {
 		const market = await this.findByPk(waypointSymbol);
