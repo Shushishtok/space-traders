@@ -113,10 +113,12 @@ shipsRouter.post('/automate/extraction', async (req, res) => {
 	const { shipSymbol, stop }: ShipExtractionAutomation = req.body;
 	validateMissingParameters({ shipSymbol });
 
+	const ship = await ShipModel.getShip(shipSymbol);
+
 	if (stop) {
-		CustomRequests.stopAutomatedExtraction(shipSymbol);		
+		CustomRequests.stopAutomatedExtraction(ship);		
 	} else {
-		CustomRequests.startAutomatedExtraction(shipSymbol);
+		CustomRequests.startAutomatedExtraction(ship);
 	}
 	sendResultResponse(res);
 });
@@ -127,9 +129,9 @@ shipsRouter.post('/automate/extraction/all', async (req, res) => {
 	const ships = await ShipModel.findAll();
 	for (const ship of ships) {
 		if (stop) {
-			CustomRequests.stopAutomatedExtraction(ship.symbol);
+			CustomRequests.stopAutomatedExtraction(ship);
 		} else {
-			CustomRequests.startAutomatedExtraction(ship.symbol);			
+			CustomRequests.startAutomatedExtraction(ship);			
 		}
 	}
 

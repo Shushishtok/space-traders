@@ -147,6 +147,10 @@ export function canShipSurvey(ship: Ship) {
 	return ship.mounts.some(mount => mount.symbol.includes("MOUNT_SURVEYOR"));
 }
 
+export function canShipExtract(ship: Ship) {	
+	return ship.mounts.some(mount => mount.symbol.includes("MOUNT_MINING_LASER"));
+}
+
 export function isErrorCodeData<T>(data: T | number): data is number {
 	return typeof data === "number"; 
 }

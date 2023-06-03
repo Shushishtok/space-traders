@@ -61,3 +61,13 @@ systemsRouter.get('/cache/all', async (req, res) => {
 	const result = await CustomRequests.cacheAllSystems();
 	sendResultResponse(res, result);
 });
+
+systemsRouter.get('/cache/waypoints/all', async (req, res) => {
+	const result = await CustomRequests.cacheAllWaypoints();
+	sendResultResponse(res, result);
+});
+
+systemsRouter.get('/waypoints/with/markets', async (req, res) => {
+	const result = await CustomRequests.findAllWaypointsWithMarkets();
+	sendResultResponse(res, result);
+});

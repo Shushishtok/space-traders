@@ -26,6 +26,9 @@ export async function register(symbol: string, faction: RegisterRequestFactionEn
 	const contractCreatePromise = ContractModel.create({ ...data.data.contract });
 	const shipCreatePromise = ShipModel.create({ ...data.data.ship });
 	await Promise.all([agentCreatePromise, contractCreatePromise, shipCreatePromise]);
+
+	// Update the active token
+	process.env["ACCESS_TOKEN"] = data.data.token;
 	
 	return data;
 }

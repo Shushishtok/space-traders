@@ -3,9 +3,10 @@ import * as Systems from './system';
 import { Logger } from '../logger/logger';
 import { AutomatedActions } from '../automation/automated-action';
 import { Ship, ShipNavStatus, Survey } from '../packages/spacetraders-sdk';
-import { canShipSurvey, isErrorCodeData, sleep } from '../utils';
-import { MarketModel, ShipModel, SurveyModel } from '../sequelize/models';
+import { canShipExtract, canShipSurvey, isErrorCodeData, sleep } from '../utils';
+import { MarketModel, ShipModel, SurveyModel, SystemModel, WaypointModel } from '../sequelize/models';
 import { PaginatedRequest } from '../interfaces/pagination';
+import { Op } from 'sequelize';
 
 export async function getMarketAtShipsLocation(shipSymbol: string) {
 	const ship = await ShipModel.getShip(shipSymbol);		
@@ -65,7 +66,14 @@ export async function sellAllCargo(shipSymbol: string) {
 	return { soldItems, unacceptedItems };
 }
 
-export async function startAutomatedExtraction(shipSymbol: string) {
+export async function startAutomatedExtraction(ship: Ship) {
+	const shipSymbol = ship.symbol;
+
+	if (!canShipExtract(ship)) {
+		Logger.info(`Ship with ship symbol ${shipSymbol} cannot extract as it has no mining mounts. Skipping extract automation.`);
+		return;
+	}
+
 	const automatedActionName = `AutomatedExtraction-${shipSymbol}`;
 	let shouldRemoveFromAutomation = false; // Would not remove from automation until we go into the mining loop.
 	try {
@@ -127,12 +135,14 @@ export async function startAutomatedExtraction(shipSymbol: string) {
 	}
 }
 
-export function stopAutomatedExtraction(shipSymbol: string) {
-	try {
-		const automatedActionName = `AutomatedExtraction-${shipSymbol}`;
+export function stopAutomatedExtraction(ship: Ship) {
+	if (!canShipExtract(ship)) return;
+
+	try {		
+		const automatedActionName = `AutomatedExtraction-${ship.symbol}`;
 		AutomatedActions.stopAutomatedAction(automatedActionName);
 	} catch (err) {
-		Logger.error(`An error occurred while stopping automated extraction for ship ${shipSymbol}.`);
+		Logger.error(`An error occurred while stopping automated extraction for ship ${ship.symbol}.`);
 	}
 }
 
@@ -186,4 +196,36 @@ export async function cacheAllSystems() {
 	
 	Logger.info(`cached a total of ${cachedSystems.length} systems.`);
 	return cachedSystems;
+}
+
+export async function cacheAllWaypoints() {
+	const cachedWaypoints = [];
+	const pagination: PaginatedRequest = { limit: 20, page: 1 };
+	const systems = await SystemModel.findAll();
+	for (const system of systems) {
+		let paginationFinished = false;	
+		while (!paginationFinished) {		
+			const result = await Systems.listWaypointsInSystem(system.symbol, pagination);
+			if (isErrorCodeData(result)) { // Shouldn't occur, but just in case
+				paginationFinished = true;
+				continue;
+			}
+
+			if (result.meta.total <= (pagination.page * pagination.limit)) {
+				paginationFinished = true;
+			} else {
+				pagination.page += 1;
+			}
+
+			cachedWaypoints.push(...result.data.map(system => system.symbol));
+		}
+	}
+	
+	Logger.info(`cached a total of ${cachedWaypoints.length} waypoints.`);
+	return cachedWaypoints;
+}
+
+export async function findAllWaypointsWithMarkets() {	
+	const allWaypointsWithMarkets = await WaypointModel.findAll({ where: { traits: { [Op.contains]: [{ symbol: "MARKETPLACE" }] } } });
+	return allWaypointsWithMarkets;
 }

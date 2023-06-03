@@ -17,7 +17,7 @@ defaultRouter.post("/start-game", async (req, res) => {
 		General.wipeDB();
 	}
 
-	const result = await General.register(symbol, faction);
+	const result = await General.register(symbol, faction);	
 	sendResultResponse(res, result);
 });
 
