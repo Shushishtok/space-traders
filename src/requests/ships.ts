@@ -1,6 +1,6 @@
 import { PaginatedRequest } from "../interfaces/pagination";
 import { Logger } from "../logger/logger";
-import { FleetApi, PurchaseCargoRequest, SellCargoRequest, ShipType, Survey } from "../packages/spacetraders-sdk";
+import { FleetApi, PurchaseCargoRequest, SellCargoRequest, ShipNavFlightMode, ShipType, Survey } from "../packages/spacetraders-sdk";
 import { AgentModel, ExtractionModel, ShipModel, SurveyModel, TransactionModel } from "../sequelize/models";
 import { calculateTimeUntilArrival, isErrorCodeData, tryApiRequest, validatePagination } from "../utils";
 import { createAxiosInstance } from "./create-axios-instance";
@@ -240,5 +240,36 @@ export async function createSurvey(shipSymbol: string) {
 	Logger.info(`Ship with symbol ${shipSymbol} entered a cooldown of ${data.data.cooldown.totalSeconds} seconds.`);
 	await Promise.all(surveyPromises);
 
+	return data;
+}
+
+export async function warpShip(shipSymbol: string, waypointSymbol: string) {
+	const shipsApi = getFleetApi();
+
+	const data = await tryApiRequest(async () => {
+		const result = await shipsApi.warpShip(shipSymbol, { waypointSymbol });
+		const { data } = result;
+		return data;
+	}, "Could not warp to waypoint");
+	
+	if (isErrorCodeData(data)) return data;
+
+	const { humanReadableTimestamp } = calculateTimeUntilArrival(data.data.nav.route.arrival);
+	Logger.info(`Ship with symbol ${shipSymbol} is currently warping to ${waypointSymbol} in flight mode ${data.data.nav.flightMode}. Expected time until arrival: ${data.data.nav.route.arrival} (${humanReadableTimestamp}).`);
+
+	return data;
+}
+
+export async function setFlightMode(shipSymbol: string, flightMode: ShipNavFlightMode) {
+	const shipsApi = getFleetApi();
+
+	const data = await tryApiRequest(async () => {
+		const result = await shipsApi.patchShipNav(shipSymbol, { flightMode });
+		const { data } = result;
+		return data;
+	}, "Could not set flight mode");
+	
+	if (isErrorCodeData(data)) return data;
+	
 	return data;
 }

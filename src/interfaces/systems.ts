@@ -8,3 +8,7 @@ export interface Waypoints {
 	page: number;
 	limit: number;
 }
+
+export interface SystemRequest {
+	systemSymbol: string;
+}

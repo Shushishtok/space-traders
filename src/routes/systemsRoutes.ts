@@ -2,7 +2,7 @@ import { Router } from 'express';
 import * as Systems from '../requests/system';
 import * as CustomRequests from '../requests/custom-requests';
 import { sendResultResponse, validateMissingParameters, validatePagination } from '../utils';
-import { Waypoint, Waypoints } from "../interfaces/systems";
+import { SystemRequest, Waypoint, Waypoints } from "../interfaces/systems";
 import { ShipSymbol } from '../interfaces/ships';
 import { PaginatedRequest } from '../interfaces/pagination';
 
@@ -69,5 +69,13 @@ systemsRouter.get('/cache/waypoints/all', async (req, res) => {
 
 systemsRouter.get('/waypoints/with/markets', async (req, res) => {
 	const result = await CustomRequests.findAllWaypointsWithMarkets();
+	sendResultResponse(res, result);
+});
+
+systemsRouter.get('/nearby/jumpgates', async (req, res) => {
+	const { systemSymbol }: SystemRequest = req.body;
+	validateMissingParameters({ systemSymbol });
+
+	const result = await CustomRequests.findNearbySystemsWithJumpGates(systemSymbol);
 	sendResultResponse(res, result);
 });

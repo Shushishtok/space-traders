@@ -1,11 +1,11 @@
 import { Logger } from '../logger/logger';
-import { DefaultApi, RegisterRequestFactionEnum } from '../packages/spacetraders-sdk';
+import { DefaultApi } from '../packages/spacetraders-sdk';
 import { AgentModel, ContractModel, ExtractionModel, MarketModel, ShipModel, SurveyModel, SystemModel, TransactionModel, WaypointModel } from '../sequelize/models';
 import { isErrorCodeData, tryApiRequest } from '../utils';
 import { createAxiosInstance } from './create-axios-instance';
 import { createConfiguration } from './create-configuration';
 
-export async function register(symbol: string, faction: RegisterRequestFactionEnum) {
+export async function register(symbol: string, faction: string) {
 	const configuration = createConfiguration(false);
 	const axiosInstance = createAxiosInstance();
 

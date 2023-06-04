@@ -7,6 +7,7 @@ import { canShipExtract, canShipSurvey, isErrorCodeData, sleep } from '../utils'
 import { MarketModel, ShipModel, SurveyModel, SystemModel, WaypointModel } from '../sequelize/models';
 import { PaginatedRequest } from '../interfaces/pagination';
 import { Op } from 'sequelize';
+import { AppError, ErrorNames } from '../exceptions/app-error';
 
 export async function getMarketAtShipsLocation(shipSymbol: string) {
 	const ship = await ShipModel.getShip(shipSymbol);		
@@ -228,4 +229,29 @@ export async function cacheAllWaypoints() {
 export async function findAllWaypointsWithMarkets() {	
 	const allWaypointsWithMarkets = await WaypointModel.findAll({ where: { traits: { [Op.contains]: [{ symbol: "MARKETPLACE" }] } } });
 	return allWaypointsWithMarkets;
+}
+
+export async function findNearbySystemsWithJumpGates(systemSymbol: string) {
+	// Check system has a jump gate in the system's waypoints
+	const waypointsInSystem = await WaypointModel.findAll({ where: { systemSymbol: systemSymbol } });
+	const jumpGateWaypoint = waypointsInSystem.find(waypoint => waypoint.type === "JUMP_GATE");
+	if (!jumpGateWaypoint) {
+		throw new AppError({
+			description: `No jump gate waypoint was found in system ${systemSymbol}`,
+			httpCode: 400,
+			name: ErrorNames.BAD_PARAMETER,
+		});
+	}
+
+	// Get jump gate details
+	const jumpGateDetails = await Systems.getJumpGate(systemSymbol, jumpGateWaypoint.symbol);
+	if (isErrorCodeData(jumpGateDetails)) {
+		throw new AppError({
+			description: `Got error code ${jumpGateDetails} while finding jump gate`,
+			httpCode: 500,			
+		});
+	}	
+
+	// Return connected systems list from details
+	return jumpGateDetails.data.connectedSystems;
 }

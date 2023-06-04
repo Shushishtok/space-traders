@@ -3,7 +3,7 @@ import * as Ships from '../requests/ships';
 import * as CustomRequests from '../requests/custom-requests';
 import { sendResultResponse, validateMissingParameters } from '../utils';
 import { PaginatedRequest } from "../interfaces/pagination";
-import { ExtractIntoShip, NavigateShip, PurchaseShip, ShipCargoTransaction, ShipExtractionAutomation, ShipExtractionAutomationAll, ShipFullCargoPurchase, ShipSymbol } from '../interfaces/ships';
+import { ExtractIntoShip, NavigateShip, PurchaseShip, SetFlightModeRequest, ShipCargoTransaction, ShipExtractionAutomation, ShipExtractionAutomationAll, ShipFullCargoPurchase, ShipSymbol } from '../interfaces/ships';
 import { ShipModel } from '../sequelize/models';
 import moment from 'moment';
 
@@ -155,4 +155,20 @@ shipsRouter.get('/testBurst', async (req, res) => {
 	const diff = moment().diff(startTime);
 	const duration = moment.duration(diff);
 	res.status(200).send({ duration: duration.asSeconds() });
+});
+
+shipsRouter.post('/warp', async (req, res) => {
+	const { shipSymbol, waypointSymbol }: NavigateShip = req.body; 
+	validateMissingParameters({ shipSymbol, waypointSymbol });
+	
+	const result = await Ships.warpShip(shipSymbol, waypointSymbol);
+	sendResultResponse(res, result);
+});
+
+shipsRouter.put('/flight-mode', async (req, res) => {
+	const { shipSymbol, flightMode }: SetFlightModeRequest = req.body;
+	validateMissingParameters({ shipSymbol, flightMode });
+
+	const result = await Ships.setFlightMode(shipSymbol, flightMode);
+	sendResultResponse(res, result);
 });

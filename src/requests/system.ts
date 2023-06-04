@@ -105,3 +105,20 @@ export async function listSystems(pagination: PaginatedRequest) {
 
 	return data;
 }
+
+export async function getJumpGate(systemSymbol: string, waypointSymbol: string) {
+	const systemsApi = getSystemApi();
+
+	const data = await tryApiRequest(async () => {
+		const result = await systemsApi.getJumpGate(systemSymbol, waypointSymbol);
+		const { data } = result;
+		return data;
+	}, "Could not get jump gate");
+
+	if (isErrorCodeData(data)) return data;
+
+	Logger.info(`Got jump gate data: ${JSON.stringify(data, undefined, 4)}`);
+	// await WaypointModel.upsert({ ...data.data }); TODO: add JumpgateModel and upsert into it instead
+
+	return data;
+}

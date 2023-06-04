@@ -1,4 +1,4 @@
-import { ShipType, Survey } from "../packages/spacetraders-sdk";
+import { ShipNavFlightMode, ShipType, Survey } from "../packages/spacetraders-sdk";
 
 export interface ShipSymbol {
 	shipSymbol: string;
@@ -32,4 +32,8 @@ export interface ShipExtractionAutomation extends ShipSymbol {
 
 export interface ShipExtractionAutomationAll {
 	stop: boolean;
+}
+
+export interface SetFlightModeRequest extends ShipSymbol {
+	flightMode: ShipNavFlightMode;
 }

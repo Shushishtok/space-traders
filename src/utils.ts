@@ -2,7 +2,7 @@ import fs from 'fs';
 import { Response } from "express";
 import { AppError, HttpCode, ErrorNames } from "./exceptions/app-error";
 import { isAxiosError } from "axios";
-import { ContractDeliverGood, GetMyShip200Response, Ship } from "./packages/spacetraders-sdk";
+import { ContractDeliverGood, GetMyShip200Response, Ship, System } from "./packages/spacetraders-sdk";
 import moment from "moment";
 import { Logger } from "./logger/logger";
 import { MAX_PAGiNATION_LIMIT, MIN_PAGINATION_LIMIT, MIN_PAGINATION_PAGE } from './consts/general';
@@ -135,7 +135,7 @@ export function calculateTimeUntilArrival(arrivalTime: string) {
 	const minutes = duration.asMinutes();
 	const seconds = duration.asSeconds();
 	const milliseconds = duration.asMilliseconds();	
-	const humanReadableTimestamp = `${Math.round(hours)} hours, ${Math.round(minutes)} minutes and ${Math.round(seconds)} seconds`;
+	const humanReadableTimestamp = `${Math.round(hours)} hours, ${Math.round(minutes % 60)} minutes and ${Math.round(seconds % 60)} seconds`;
 	return { humanReadableTimestamp, hours, minutes, seconds, milliseconds };
 }
 
@@ -153,6 +153,18 @@ export function canShipExtract(ship: Ship) {
 
 export function isErrorCodeData<T>(data: T | number): data is number {
 	return typeof data === "number"; 
+}
+
+export function calculateDistance(x1: number, y1: number, x2: number, y2: number) {
+	return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+}
+
+export function calculateDistanceBetweenSystems(system1: System, system2: System) {
+	return calculateDistance(system1.x, system1.y, system2.x, system2.y);
+}
+
+export function calculateDistanceBetweenWaypoints(waypoint1: System, waypoint2: System) {
+	return calculateDistance(waypoint1.x, waypoint1.y, waypoint2.x, waypoint2.y);
 }
 
 // export async function paginateResults<T>(paginationFunc: (pagination: PaginatedRequest) => T) {
