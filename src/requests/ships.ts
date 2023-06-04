@@ -256,6 +256,7 @@ export async function warpShip(shipSymbol: string, waypointSymbol: string) {
 
 	const { humanReadableTimestamp } = calculateTimeUntilArrival(data.data.nav.route.arrival);
 	Logger.info(`Ship with symbol ${shipSymbol} is currently warping to ${waypointSymbol} in flight mode ${data.data.nav.flightMode}. Expected time until arrival: ${data.data.nav.route.arrival} (${humanReadableTimestamp}).`);
+	await ShipModel.update({ fuel: data.data.fuel, nav: data.data.nav }, { where: { symbol: shipSymbol } });
 
 	return data;
 }
@@ -270,6 +271,30 @@ export async function setFlightMode(shipSymbol: string, flightMode: ShipNavFligh
 	}, "Could not set flight mode");
 	
 	if (isErrorCodeData(data)) return data;
+	Logger.info(`Set ship with symbol ${shipSymbol} flight mode to ${flightMode}.`);
 	
+	await ShipModel.update({ nav: data.data }, { where: { symbol: shipSymbol } });
+	
+	return data;
+}
+
+export async function installMount(shipSymbol: string, mountSymbol: string) {
+	const shipsApi = getFleetApi();
+
+	const data = await tryApiRequest(async () => {
+		const result = await shipsApi.installMount(shipSymbol, { symbol: mountSymbol });
+		const { data } = result;
+		return data;
+	}, "Could not set mount");
+	
+	if (isErrorCodeData(data)) return data;
+
+	Logger.info(`Successfully installed mount ${mountSymbol} in ship symbol: ${shipSymbol}.`);
+	
+	const updateAgentPromise = AgentModel.update({ ...data.data.agent }, { where: { symbol: data.data.agent.symbol } });
+	const updateShipPromise = ShipModel.update({ cargo: data.data.cargo, mounts: data.data.mounts }, { where: { symbol: shipSymbol } });
+	const createTransactionPromise = TransactionModel.create({ ...data.data.transaction });
+	await Promise.all([updateAgentPromise, updateShipPromise, createTransactionPromise]);
+
 	return data;
 }

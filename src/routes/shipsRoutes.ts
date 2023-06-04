@@ -3,7 +3,7 @@ import * as Ships from '../requests/ships';
 import * as CustomRequests from '../requests/custom-requests';
 import { sendResultResponse, validateMissingParameters } from '../utils';
 import { PaginatedRequest } from "../interfaces/pagination";
-import { ExtractIntoShip, NavigateShip, PurchaseShip, SetFlightModeRequest, ShipCargoTransaction, ShipExtractionAutomation, ShipExtractionAutomationAll, ShipFullCargoPurchase, ShipSymbol } from '../interfaces/ships';
+import { ExtractIntoShip, InstallMountRequest, NavigateShip, PurchaseShip, SetFlightModeRequest, ShipCargoTransaction, ShipExtractionAutomation, ShipExtractionAutomationAll, ShipFullCargoPurchase, ShipSymbol } from '../interfaces/ships';
 import { ShipModel } from '../sequelize/models';
 import moment from 'moment';
 
@@ -170,5 +170,13 @@ shipsRouter.put('/flight-mode', async (req, res) => {
 	validateMissingParameters({ shipSymbol, flightMode });
 
 	const result = await Ships.setFlightMode(shipSymbol, flightMode);
+	sendResultResponse(res, result);
+});
+
+shipsRouter.post('/install/mount', async (req, res) => {
+	const { shipSymbol, mountSymbol }: InstallMountRequest = req.body;
+	validateMissingParameters({ shipSymbol, mountSymbol });
+
+	const result = await Ships.installMount(shipSymbol, mountSymbol);
 	sendResultResponse(res, result);
 });
