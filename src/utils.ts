@@ -7,6 +7,8 @@ import moment from "moment";
 import { Logger } from "./logger/logger";
 import { MAX_PAGiNATION_LIMIT, MIN_PAGINATION_LIMIT, MIN_PAGINATION_PAGE } from './consts/general';
 import { RateLimiter } from './automation/rate-limiter';
+import { ShipActionRole } from './consts/ships';
+import { ShipModel } from './sequelize/models';
 
 export async function sleep(seconds: number) {
 	await new Promise((resolve) => {
@@ -41,6 +43,17 @@ export function validateMissingParameters(paramsToCheck: object) {
 				name: ErrorNames.MISSING_PARAMETER,
 			});
 		}
+	}
+}
+
+export function validateEnum(value: string, enumToTest: Record<string, string>) {
+	const enumValues = Object.values(enumToTest);
+	if (!enumValues.includes(value)) {
+		throw new AppError({
+			description: `Value ${value} is not a part of the expected enum. Possible values: ${JSON.stringify(enumValues)}`,
+			httpCode: 400,
+			name: ErrorNames.BAD_PARAMETER,
+		});
 	}
 }
 
@@ -165,6 +178,10 @@ export function calculateDistanceBetweenSystems(system1: System, system2: System
 
 export function calculateDistanceBetweenWaypoints(waypoint1: System, waypoint2: System) {
 	return calculateDistance(waypoint1.x, waypoint1.y, waypoint2.x, waypoint2.y);
+}
+
+export function shipHasRole(ship: ShipModel, role: ShipActionRole) {
+	return ship.roles.includes(role);
 }
 
 // export async function paginateResults<T>(paginationFunc: (pagination: PaginatedRequest) => T) {

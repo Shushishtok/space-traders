@@ -2,12 +2,13 @@ import * as Ships from './ships';
 import * as Systems from './system';
 import { Logger } from '../logger/logger';
 import { AutomatedActions } from '../automation/automated-action';
-import { Ship, ShipNavStatus, Survey } from '../../packages/spacetraders-sdk';
-import { canShipExtract, canShipSurvey, isErrorCodeData, sleep } from '../utils';
+import { ShipNavStatus, Survey } from '../../packages/spacetraders-sdk';
+import { canShipExtract, canShipSurvey, isErrorCodeData, shipHasRole, sleep } from '../utils';
 import { MarketModel, ShipModel, SurveyModel, SystemModel, WaypointModel } from '../sequelize/models';
 import { PaginatedRequest } from '../interfaces/pagination';
 import { Op } from 'sequelize';
 import { AppError, ErrorNames } from '../exceptions/app-error';
+import { ShipActionRole } from '../consts/ships';
 
 export async function getMarketAtShipsLocation(shipSymbol: string) {
 	const ship = await ShipModel.getShip(shipSymbol);		
@@ -67,11 +68,16 @@ export async function sellAllCargo(shipSymbol: string) {
 	return { soldItems, unacceptedItems };
 }
 
-export async function startAutomatedExtraction(ship: Ship) {
+export async function startAutomatedExtraction(ship: ShipModel) {
 	const shipSymbol = ship.symbol;
 
-	if (!canShipExtract(ship)) {
-		Logger.info(`Ship with ship symbol ${shipSymbol} cannot extract as it has no mining mounts. Skipping extract automation.`);
+	if (!canShipExtract(ship) && !canShipSurvey(ship)) {
+		Logger.info(`Ship with ship symbol ${shipSymbol} cannot extract or survey as it has no mining or surveying mounts. Skipping extract automation.`);
+		return;
+	}
+
+	if (!shipHasRole(ship, ShipActionRole.EXTRACTOR) && shipHasRole(ship, ShipActionRole.SURVEYOR)) {
+		Logger.info(`Ship with ship symbol ${shipSymbol} does not have an extractor or surveyor role. Skipping extract automation`);
 		return;
 	}
 
@@ -86,7 +92,7 @@ export async function startAutomatedExtraction(ship: Ship) {
 	
 		shouldRemoveFromAutomation = true;	
 		
-		const ship = await ShipModel.findByPk(shipSymbol) as Ship;
+		const ship = await ShipModel.getShip(shipSymbol);
 		const currentShipWaypointSymbol = ship.nav.waypointSymbol;
 
 		while (AutomatedActions.isAutomationActive(automatedActionName)) {
@@ -96,8 +102,8 @@ export async function startAutomatedExtraction(ship: Ship) {
 			// Search for a survey which symbol's equal to the ship's current location
 			let survey = await SurveyModel.findOne({ where: { symbol: currentShipWaypointSymbol } }) as Survey;
 
-			// If there is no survey, check if the ship is able to survey			
-			if (!survey && canShipSurvey(ship)) {
+			// If there is no survey, check if the ship has the surveyor role and it can survey
+			if (!survey && canShipSurvey(ship) && shipHasRole(ship, ShipActionRole.SURVEYOR)) {
 				const surveyData = await Ships.createSurvey(ship.symbol);
 				if (!isErrorCodeData(surveyData)) {
 					survey = surveyData.data.surveys[0];
@@ -136,8 +142,8 @@ export async function startAutomatedExtraction(ship: Ship) {
 	}
 }
 
-export function stopAutomatedExtraction(ship: Ship) {
-	if (!canShipExtract(ship)) return;
+export function stopAutomatedExtraction(ship: ShipModel) {
+	if (!canShipExtract(ship)) return;	
 
 	try {		
 		const automatedActionName = `AutomatedExtraction-${ship.symbol}`;

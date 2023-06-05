@@ -38,7 +38,7 @@ async function bootstrap() {
 		ErrorHandler.handleError(error, res);
 	});
 
-	await connection.sync();
+	await connection.sync({ alter: true });
 
 	app.listen(port, () => {
 		console.log(`Server is running in port: ${port}`);

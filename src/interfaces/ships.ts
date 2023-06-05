@@ -1,4 +1,5 @@
 import { ShipMountSymbolEnum, ShipNavFlightMode, ShipType, Survey } from "../../packages/spacetraders-sdk";
+import { ShipActionRole } from "../consts/ships";
 
 export interface ShipSymbol {
 	shipSymbol: string;
@@ -40,4 +41,9 @@ export interface SetFlightModeRequest extends ShipSymbol {
 
 export interface InstallMountRequest extends ShipSymbol {
 	mountSymbol: ShipMountSymbolEnum
+}
+
+export interface AssignShipRoles extends ShipSymbol {
+	addRoles?: ShipActionRole[];
+	removeRoles?: ShipActionRole[];
 }

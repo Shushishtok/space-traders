@@ -7,6 +7,7 @@ import { createAxiosInstance } from "./create-axios-instance";
 import { createConfiguration } from "./create-configuration";
 import { shipSurveyExhaustedError, shipSurveyExpirationError } from "../consts/error-codes";
 import { DEFAULT_PAGINATION_LIMIT, DEFAULT_PAGINATION_PAGE } from "../consts/general";
+import { ShipActionRole } from "../consts/ships";
 
 function getFleetApi() {
 	const configuration = createConfiguration();
@@ -160,7 +161,7 @@ export async function extractResources(shipSymbol: string, survey?: Survey) {
 	if (isErrorCodeData(result)) {
 		if (result === shipSurveyExpirationError || result === shipSurveyExhaustedError) {
 			if (survey) {
-				const surveyData = await SurveyModel.findByPk(survey.signature);
+				const surveyData = await SurveyModel.getSurvey(survey.signature);
 				if (surveyData) {
 					await surveyData.destroy();
 					Logger.info(`Survey with signature ${surveyData.signature} is exhausted or expired. Cleared the survey from the DB.`);
@@ -297,4 +298,19 @@ export async function installMount(shipSymbol: string, mountSymbol: string) {
 	await Promise.all([updateAgentPromise, updateShipPromise, createTransactionPromise]);
 
 	return data;
+}
+
+export async function updateRoles(shipSymbol: string, addRoles: ShipActionRole[] = [], removeRoles: ShipActionRole[] = []) {
+	if (addRoles.length === 0 && removeRoles.length === 0) {
+		Logger.info(`No roles were added or removed. Skipping action.`);
+		return;
+	}
+
+	const ship = await ShipModel.getShip(shipSymbol);
+	let updatedRoles = ship.roles.filter(role => !removeRoles.includes(role)).concat(addRoles);	
+	updatedRoles = [...new Set(updatedRoles)]; // dedup
+
+	await ship.update({ roles: updatedRoles });
+	Logger.info(`Assigned roles to ship symbol ${shipSymbol}. Current ship's assigned roles: ${JSON.stringify(updatedRoles)}`);	
+	return updatedRoles;
 }

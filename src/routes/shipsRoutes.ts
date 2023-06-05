@@ -1,11 +1,12 @@
 import { Router } from 'express';
 import * as Ships from '../requests/ships';
 import * as CustomRequests from '../requests/custom-requests';
-import { sendResultResponse, validateMissingParameters } from '../utils';
+import { sendResultResponse, shipHasRole, validateEnum, validateMissingParameters } from '../utils';
 import { PaginatedRequest } from "../interfaces/pagination";
-import { ExtractIntoShip, InstallMountRequest, NavigateShip, PurchaseShip, SetFlightModeRequest, ShipCargoTransaction, ShipExtractionAutomation, ShipExtractionAutomationAll, ShipFullCargoPurchase, ShipSymbol } from '../interfaces/ships';
+import { AssignShipRoles, ExtractIntoShip, InstallMountRequest, NavigateShip, PurchaseShip, SetFlightModeRequest, ShipCargoTransaction, ShipExtractionAutomation, ShipExtractionAutomationAll, ShipFullCargoPurchase, ShipSymbol } from '../interfaces/ships';
 import { ShipModel } from '../sequelize/models';
 import moment from 'moment';
+import { ShipActionRole } from '../consts/ships';
 
 export const shipsRouter = Router();
 
@@ -127,7 +128,8 @@ shipsRouter.post('/automate/extraction/all', async (req, res) => {
 	const { stop }: ShipExtractionAutomationAll = req.body;
 	
 	const ships = await ShipModel.findAll();
-	for (const ship of ships) {
+	const extractorShips = ships.filter(ship => shipHasRole(ship, ShipActionRole.EXTRACTOR) || shipHasRole(ship, ShipActionRole.SURVEYOR));
+	for (const ship of extractorShips) {
 		if (stop) {
 			CustomRequests.stopAutomatedExtraction(ship);
 		} else {
@@ -178,5 +180,16 @@ shipsRouter.post('/install/mount', async (req, res) => {
 	validateMissingParameters({ shipSymbol, mountSymbol });
 
 	const result = await Ships.installMount(shipSymbol, mountSymbol);
+	sendResultResponse(res, result);
+});
+
+shipsRouter.put('/roles', async (req, res) => {
+	const { shipSymbol, addRoles = [], removeRoles = [] }: AssignShipRoles = req.body;
+	validateMissingParameters({ shipSymbol });	
+	for (const role of [...addRoles, ...removeRoles]) {
+		validateEnum(role, ShipActionRole);
+	}
+
+	const result = await Ships.updateRoles(shipSymbol, addRoles, removeRoles);
 	sendResultResponse(res, result);
 });

@@ -1,6 +1,7 @@
 import { AppError, ErrorNames } from '../../exceptions/app-error';
 import { ShipNav, ShipCrew, ShipFuel, ShipFrame, ShipReactor, ShipEngine, ShipModule, ShipMount, ShipRegistration, ShipCargo } from '../../../packages/spacetraders-sdk';
 import { Table, Model, Column, DataType } from 'sequelize-typescript';
+import { ShipActionRole } from '../../consts/ships';
 
 @Table({ timestamps: false, tableName: 'ships' })
 export class ShipModel extends Model {
@@ -36,6 +37,9 @@ export class ShipModel extends Model {
 
 	@Column({ type: DataType.JSONB, allowNull: false })
 		cargo!: ShipCargo;
+
+	@Column({ type: DataType.JSONB, allowNull: false, defaultValue: [] })
+		roles!: ShipActionRole[];
 
 	static async getShip(shipSymbol: string) {
 		const ship = await this.findByPk(shipSymbol);

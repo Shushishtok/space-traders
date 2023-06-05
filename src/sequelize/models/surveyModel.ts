@@ -1,5 +1,6 @@
 import { Table, Model, Column, DataType } from 'sequelize-typescript';
 import { SurveyDeposit, SurveySizeEnum } from '../../../packages/spacetraders-sdk';
+import { AppError, ErrorNames } from '../../exceptions/app-error';
 
 @Table({ tableName: 'surveys' })
 export class SurveyModel extends Model {
@@ -17,4 +18,15 @@ export class SurveyModel extends Model {
 
 	@Column({ type: DataType.STRING, allowNull: false })
 		symbol!: string;
+
+	static async getSurvey(signature: string) {
+		const survey = await this.findByPk(signature);
+		if (!survey) throw new AppError({
+			description: `Could not find survey with signature ${signature}`,
+			httpCode: 500,
+			name: ErrorNames.DB_ERROR,			
+		});
+
+		return survey;
+	}
 }
