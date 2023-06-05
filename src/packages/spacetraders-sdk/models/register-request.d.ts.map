@@ -1,1 +1,0 @@
-{"version":3,"file":"register-request.d.ts","sourceRoot":"","sources":["register-request.ts"],"names":[],"mappings":"AAEA;;;;;;;;;;GAUG;AAIH;;;;GAIG;AACH,MAAM,WAAW,eAAe;IAC5B;;;;OAIG;IACH,SAAS,EAAE,0BAA0B,CAAC;IACtC;;;;OAIG;IACH,QAAQ,EAAE,MAAM,CAAC;CACpB;AAED,eAAO,MAAM,0BAA0B;;;;;;CAM7B,CAAC;AAEX,oBAAY,0BAA0B,GAAG,OAAO,0BAA0B,CAAC,MAAM,OAAO,0BAA0B,CAAC,CAAC"}

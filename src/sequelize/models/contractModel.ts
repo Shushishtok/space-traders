@@ -1,5 +1,5 @@
 import { Table, Model, Column, DataType } from 'sequelize-typescript';
-import { ContractTerms, ContractTypeEnum } from '../../packages/spacetraders-sdk';
+import { ContractTerms, ContractTypeEnum } from '../../../packages/spacetraders-sdk';
 
 @Table({ tableName: 'contracts' })
 export class ContractModel extends Model {

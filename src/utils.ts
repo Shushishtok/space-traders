@@ -2,7 +2,7 @@ import fs from 'fs';
 import { Response } from "express";
 import { AppError, HttpCode, ErrorNames } from "./exceptions/app-error";
 import { isAxiosError } from "axios";
-import { ContractDeliverGood, GetMyShip200Response, Ship, System } from "./packages/spacetraders-sdk";
+import { ContractDeliverGood, GetMyShip200Response, Ship, System } from "../packages/spacetraders-sdk";
 import moment from "moment";
 import { Logger } from "./logger/logger";
 import { MAX_PAGiNATION_LIMIT, MIN_PAGINATION_LIMIT, MIN_PAGINATION_PAGE } from './consts/general';

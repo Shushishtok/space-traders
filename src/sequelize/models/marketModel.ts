@@ -1,5 +1,5 @@
 import { Table, Model, Column, DataType } from 'sequelize-typescript';
-import { MarketTradeGood, MarketTransaction, TradeGood } from '../../packages/spacetraders-sdk';
+import { MarketTradeGood, MarketTransaction, TradeGood } from '../../../packages/spacetraders-sdk';
 import { AppError, ErrorNames } from '../../exceptions/app-error';
 
 @Table({ tableName: 'markets' })

@@ -1,5 +1,5 @@
 import { AppError, ErrorNames } from '../../exceptions/app-error';
-import { ShipNav, ShipCrew, ShipFuel, ShipFrame, ShipReactor, ShipEngine, ShipModule, ShipMount, ShipRegistration, ShipCargo } from '../../packages/spacetraders-sdk';
+import { ShipNav, ShipCrew, ShipFuel, ShipFrame, ShipReactor, ShipEngine, ShipModule, ShipMount, ShipRegistration, ShipCargo } from '../../../packages/spacetraders-sdk';
 import { Table, Model, Column, DataType } from 'sequelize-typescript';
 
 @Table({ timestamps: false, tableName: 'ships' })

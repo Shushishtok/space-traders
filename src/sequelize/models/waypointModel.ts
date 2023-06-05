@@ -1,5 +1,5 @@
 import { Table, Model, Column, DataType } from 'sequelize-typescript';
-import { Chart, WaypointFaction, WaypointOrbital, WaypointTrait, WaypointType } from '../../packages/spacetraders-sdk';
+import { Chart, WaypointFaction, WaypointOrbital, WaypointTrait, WaypointType } from '../../../packages/spacetraders-sdk';
 
 @Table({ tableName: 'waypoints' })
 export class WaypointModel extends Model {

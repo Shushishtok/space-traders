@@ -2,7 +2,7 @@ import { DEFAULT_PAGINATION_LIMIT, DEFAULT_PAGINATION_PAGE } from "../consts/gen
 import { AppError, ErrorNames } from "../exceptions/app-error";
 import { PaginatedRequest } from "../interfaces/pagination";
 import { Logger } from "../logger/logger";
-import { ContractsApi } from "../packages/spacetraders-sdk";
+import { ContractsApi } from "../../packages/spacetraders-sdk";
 import { ContractModel, ShipModel } from "../sequelize/models";
 import { isErrorCodeData, tryApiRequest, validatePagination } from "../utils";
 import { createAxiosInstance } from "./create-axios-instance";

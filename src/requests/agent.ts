@@ -1,5 +1,5 @@
 import { Logger } from "../logger/logger";
-import { AgentsApi } from "../packages/spacetraders-sdk";
+import { AgentsApi } from "../../packages/spacetraders-sdk";
 import { AgentModel } from "../sequelize/models";
 import { isErrorCodeData, tryApiRequest } from "../utils";
 import { createAxiosInstance } from "./create-axios-instance";

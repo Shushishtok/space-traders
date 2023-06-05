@@ -1,5 +1,5 @@
 import { Table, Model, Column, DataType } from 'sequelize-typescript';
-import { SurveyDeposit, SurveySizeEnum } from '../../packages/spacetraders-sdk';
+import { SurveyDeposit, SurveySizeEnum } from '../../../packages/spacetraders-sdk';
 
 @Table({ tableName: 'surveys' })
 export class SurveyModel extends Model {

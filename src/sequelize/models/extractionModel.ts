@@ -1,5 +1,5 @@
 import { Table, Model, Column, DataType } from 'sequelize-typescript';
-import { Extraction } from '../../packages/spacetraders-sdk';
+import { Extraction } from '../../../packages/spacetraders-sdk';
 
 @Table({ tableName: 'extractions' })
 export class ExtractionModel extends Model {

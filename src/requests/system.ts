@@ -1,7 +1,7 @@
 import { DEFAULT_PAGINATION_LIMIT, DEFAULT_PAGINATION_PAGE } from "../consts/general";
 import { PaginatedRequest } from "../interfaces/pagination";
 import { Logger } from "../logger/logger";
-import { SystemsApi } from "../packages/spacetraders-sdk";
+import { SystemsApi } from "../../packages/spacetraders-sdk";
 import { MarketModel, SystemModel, WaypointModel } from "../sequelize/models";
 import { isErrorCodeData, tryApiRequest } from "../utils";
 import { createAxiosInstance } from "./create-axios-instance";

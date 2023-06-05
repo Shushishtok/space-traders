@@ -1,5 +1,5 @@
 import { Table, Model, Column, DataType } from 'sequelize-typescript';
-import { SystemFaction, SystemType, SystemWaypoint } from '../../packages/spacetraders-sdk';
+import { SystemFaction, SystemType, SystemWaypoint } from '../../../packages/spacetraders-sdk';
 
 @Table({ tableName: 'systems' })
 export class SystemModel extends Model {

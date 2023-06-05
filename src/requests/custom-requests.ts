@@ -2,7 +2,7 @@ import * as Ships from './ships';
 import * as Systems from './system';
 import { Logger } from '../logger/logger';
 import { AutomatedActions } from '../automation/automated-action';
-import { Ship, ShipNavStatus, Survey } from '../packages/spacetraders-sdk';
+import { Ship, ShipNavStatus, Survey } from '../../packages/spacetraders-sdk';
 import { canShipExtract, canShipSurvey, isErrorCodeData, sleep } from '../utils';
 import { MarketModel, ShipModel, SurveyModel, SystemModel, WaypointModel } from '../sequelize/models';
 import { PaginatedRequest } from '../interfaces/pagination';

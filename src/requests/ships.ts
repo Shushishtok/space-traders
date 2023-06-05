@@ -1,6 +1,6 @@
 import { PaginatedRequest } from "../interfaces/pagination";
 import { Logger } from "../logger/logger";
-import { FleetApi, PurchaseCargoRequest, SellCargoRequest, ShipNavFlightMode, ShipType, Survey } from "../packages/spacetraders-sdk";
+import { FleetApi, PurchaseCargoRequest, SellCargoRequest, ShipNavFlightMode, ShipType, Survey } from "../../packages/spacetraders-sdk";
 import { AgentModel, ExtractionModel, ShipModel, SurveyModel, TransactionModel } from "../sequelize/models";
 import { calculateTimeUntilArrival, isErrorCodeData, tryApiRequest, validatePagination } from "../utils";
 import { createAxiosInstance } from "./create-axios-instance";
