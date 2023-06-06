@@ -262,6 +262,25 @@ export async function warpShip(shipSymbol: string, waypointSymbol: string) {
 	return data;
 }
 
+export async function jumpShip(shipSymbol: string, systemSymbol: string) {
+	const shipsApi = getFleetApi();
+
+	const data = await tryApiRequest(async () => {
+		const result = await shipsApi.jumpShip(shipSymbol, { systemSymbol });
+		const { data } = result;
+		return data;
+	}, "Could not jump to waypoint");
+	
+	if (isErrorCodeData(data)) return data;	
+
+	if (data.data.nav) {		
+		Logger.info(`Ship with symbol ${shipSymbol} jumped to system symbol ${systemSymbol}`);
+		await ShipModel.update({ nav: data.data.nav }, { where: { symbol: shipSymbol } });
+	}
+
+	return data;
+}
+
 export async function setFlightMode(shipSymbol: string, flightMode: ShipNavFlightMode) {
 	const shipsApi = getFleetApi();
 

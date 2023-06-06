@@ -3,7 +3,7 @@ import * as Ships from '../requests/ships';
 import * as CustomRequests from '../requests/custom-requests';
 import { sendResultResponse, shipHasRole, validateEnum, validateMissingParameters } from '../utils';
 import { PaginatedRequest } from "../interfaces/pagination";
-import { AssignShipRoles, ExtractIntoShip, InstallMountRequest, NavigateShip, PurchaseShip, SetFlightModeRequest, ShipCargoTransaction, ShipExtractionAutomation, ShipExtractionAutomationAll, ShipFullCargoPurchase, ShipSymbol } from '../interfaces/ships';
+import { AssignShipRoles, ExtractIntoShip, InstallMountRequestBody, JumpShipRequestBody, NavigateShip, PurchaseShip, SetFlightModeRequestBody, ShipCargoTransaction, ShipExtractionAutomation, ShipExtractionAutomationAll, ShipFullCargoPurchase, ShipSymbol } from '../interfaces/ships';
 import { ShipModel } from '../sequelize/models';
 import moment from 'moment';
 import { ShipActionRole } from '../consts/ships';
@@ -167,8 +167,16 @@ shipsRouter.post('/warp', async (req, res) => {
 	sendResultResponse(res, result);
 });
 
+shipsRouter.post('/jump', async (req, res) => {
+	const { shipSymbol, systemSymbol }: JumpShipRequestBody = req.body;
+	validateMissingParameters({ shipSymbol, systemSymbol });
+
+	const result = await Ships.jumpShip(shipSymbol, systemSymbol);
+	sendResultResponse(res, result);
+});
+
 shipsRouter.put('/flight-mode', async (req, res) => {
-	const { shipSymbol, flightMode }: SetFlightModeRequest = req.body;
+	const { shipSymbol, flightMode }: SetFlightModeRequestBody = req.body;
 	validateMissingParameters({ shipSymbol, flightMode });
 
 	const result = await Ships.setFlightMode(shipSymbol, flightMode);
@@ -176,7 +184,7 @@ shipsRouter.put('/flight-mode', async (req, res) => {
 });
 
 shipsRouter.post('/install/mount', async (req, res) => {
-	const { shipSymbol, mountSymbol }: InstallMountRequest = req.body;
+	const { shipSymbol, mountSymbol }: InstallMountRequestBody = req.body;
 	validateMissingParameters({ shipSymbol, mountSymbol });
 
 	const result = await Ships.installMount(shipSymbol, mountSymbol);

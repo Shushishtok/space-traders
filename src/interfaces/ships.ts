@@ -14,6 +14,10 @@ export interface NavigateShip extends ShipSymbol {
 	waypointSymbol: string;
 }
 
+export interface JumpShipRequestBody extends ShipSymbol {
+	systemSymbol: string;
+}
+
 export interface ExtractIntoShip extends ShipSymbol {
 	survey?: Survey;
 }
@@ -35,11 +39,11 @@ export interface ShipExtractionAutomationAll {
 	stop: boolean;
 }
 
-export interface SetFlightModeRequest extends ShipSymbol {
+export interface SetFlightModeRequestBody extends ShipSymbol {
 	flightMode: ShipNavFlightMode;
 }
 
-export interface InstallMountRequest extends ShipSymbol {
+export interface InstallMountRequestBody extends ShipSymbol {
 	mountSymbol: ShipMountSymbolEnum
 }
 
