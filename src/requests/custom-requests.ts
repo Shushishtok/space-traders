@@ -10,62 +10,73 @@ import { Op } from 'sequelize';
 import { AppError, ErrorNames } from '../exceptions/app-error';
 import { ShipActionRole } from '../consts/ships';
 
-export async function getMarketAtShipsLocation(shipSymbol: string) {
-	const ship = await ShipModel.getShip(shipSymbol);		
-	const { systemSymbol, waypointSymbol } = ship.nav;
-	Logger.info(`Getting market at ship symbol ${shipSymbol} waypoint ${waypointSymbol}.`);
+export async function getMarketAtShipsLocation(shipSymbols: string[]) {
+	const promises = shipSymbols.map(async shipSymbol => {
+		const ship = await ShipModel.getShip(shipSymbol);		
+		const { systemSymbol, waypointSymbol } = ship.nav;
+		Logger.info(`Getting market at ship symbol ${shipSymbol} waypoint ${waypointSymbol}.`);
+	
+		const marketAtShipLocation = await Systems.getMarket(systemSymbol, waypointSymbol);
+		if (isErrorCodeData(marketAtShipLocation)) return null;
+		return marketAtShipLocation.data;
+	});
 
-	const marketAtShipLocation = await Systems.getMarket(systemSymbol, waypointSymbol);
-	if (isErrorCodeData(marketAtShipLocation)) return null;
-	return marketAtShipLocation.data;
+	return await Promise.all(promises);
 }
 
-export async function purchaseFullCargo(shipSymbol: string, tradeSymbol: string) {
-	const ship = await ShipModel.getShip(shipSymbol);	
-	if (isErrorCodeData(ship)) return null;
+export async function purchaseFullCargo(shipSymbols: string[], tradeSymbol: string) {
+	const promises = shipSymbols.map(async shipSymbol => {
+		const ship = await ShipModel.getShip(shipSymbol);
+		if (isErrorCodeData(ship)) return null;
+	
+		const { capacity, units } = ship.cargo;
+		const remainingCapacity = capacity - units;
+		Logger.info(`Ship's cargo is ${units}/${capacity}, with additional space for ${remainingCapacity} units of ${tradeSymbol}.`);
+		
+		if (remainingCapacity > 0) {
+			const purchaseResult = await Ships.purchaseCargo([shipSymbol], { symbol: tradeSymbol, units: remainingCapacity });
+			if (isErrorCodeData(purchaseResult)) return null;
+			return purchaseResult;
+		} 
+		Logger.error(`Ship had no space in its cargo to purchase additional units of ${tradeSymbol}.`);
+		return null;
+	});	
 
-	const { capacity, units } = ship.cargo;
-	const remainingCapacity = capacity - units;
-	Logger.info(`Ship's cargo is ${units}/${capacity}, with additional space for ${remainingCapacity} units of ${tradeSymbol}.`);
-	
-	if (remainingCapacity > 0) {
-		const purchaseResult = await Ships.purchaseCargo(shipSymbol, { symbol: tradeSymbol, units: remainingCapacity });
-		if (isErrorCodeData(purchaseResult)) return null;
-		return purchaseResult;
-	} 
-	Logger.error(`Ship had no space in its cargo to purchase additional units of ${tradeSymbol}.`);
-	return null;
-	
+	return await Promise.all(promises);
 }
 
-export async function sellAllCargo(shipSymbol: string) {
-	const ship = await ShipModel.getShip(shipSymbol);	
-	if (ship.nav.status !== ShipNavStatus.Docked) {
-		await Ships.dockShip(shipSymbol);
-	}
-
-	const market = await MarketModel.getMarket(ship.nav.waypointSymbol);
-
-	const soldItems = [];
-	const unacceptedItems = [];
-
-	Logger.info(`Selling all items in ship with symbol ${shipSymbol}'s cargo`);
-	const { inventory } = ship.cargo;	
-	if (inventory.length === 0) {
-		Logger.info(`Ship with symbol ${shipSymbol} has no cargo to sell.`);		
-	}
-
-	for (const item of inventory) {
-		const { symbol, units } = item;
-		if (market.tradeGoods.some(tradeGood => tradeGood.symbol === symbol)) {
-			const result = await Ships.sellCargo(shipSymbol, { symbol, units });
-			soldItems.push(result);
-		} else {
-			Logger.info(`Trade good with symbol ${symbol} is not accepted for sale in the market's trade goods list.`);
-			unacceptedItems.push(symbol);
+export async function sellAllCargo(shipSymbols: string[]) {
+	const promises = shipSymbols.map(async shipSymbol => {
+		const ship = await ShipModel.getShip(shipSymbol);	
+		if (ship.nav.status !== ShipNavStatus.Docked) {
+			await Ships.dockShips([shipSymbol]);
 		}
-	}
-	return { soldItems, unacceptedItems };
+	
+		const market = await MarketModel.getMarket(ship.nav.waypointSymbol);
+	
+		const soldItems = [];
+		const unacceptedItems = [];
+	
+		Logger.info(`Selling all items in ship with symbol ${shipSymbol}'s cargo`);
+		const { inventory } = ship.cargo;	
+		if (inventory.length === 0) {
+			Logger.info(`Ship with symbol ${shipSymbol} has no cargo to sell.`);		
+		}
+	
+		for (const item of inventory) {
+			const { symbol, units } = item;
+			if (market.tradeGoods.some(tradeGood => tradeGood.symbol === symbol)) {
+				const result = await Ships.sellCargo([shipSymbol], { symbol, units });
+				soldItems.push(result);
+			} else {
+				Logger.info(`Trade good with symbol ${symbol} is not accepted for sale in the market's trade goods list.`);
+				unacceptedItems.push(symbol);
+			}
+		}
+		return { soldItems, unacceptedItems };
+	});
+
+	return await Promise.all(promises);
 }
 
 export async function startAutomatedExtraction(ship: ShipModel) {
@@ -97,14 +108,14 @@ export async function startAutomatedExtraction(ship: ShipModel) {
 
 		while (AutomatedActions.isAutomationActive(automatedActionName)) {
 			// Orbit
-			await Ships.orbitShip(shipSymbol);
+			await Ships.orbitShips([shipSymbol]);
 
 			// Search for a survey which symbol's equal to the ship's current location
 			let survey = await SurveyModel.findOne({ where: { symbol: currentShipWaypointSymbol } }) as Survey;
 
 			// If there is no survey, check if the ship has the surveyor role and it can survey
 			if (!survey && canShipSurvey(ship) && shipHasRole(ship, ShipActionRole.SURVEYOR)) {
-				const surveyData = await Ships.createSurvey(ship.symbol);
+				const surveyData = (await Ships.createSurvey([ship.symbol]))[0];
 				if (!isErrorCodeData(surveyData)) {
 					survey = surveyData.data.surveys[0];
 					const cooldown = surveyData.data.cooldown.totalSeconds;
@@ -117,20 +128,20 @@ export async function startAutomatedExtraction(ship: ShipModel) {
 			}
 				
 			// Extract (fetch cooldown and mined units)
-			const extract = await Ships.extractResources(shipSymbol, survey);
+			const extract = (await Ships.extractResources([shipSymbol], survey))[0];
 			if (isErrorCodeData(extract)) continue;
 			const cooldown = extract.data.cooldown.totalSeconds;
 			const minedUnits = extract.data.extraction.yield;
 	
 			// Dock
-			await Ships.dockShip(shipSymbol);
+			await Ships.dockShips([shipSymbol]);
 	
 			// Sell mined units
-			await Ships.sellCargo(shipSymbol, minedUnits);
+			await Ships.sellCargo([shipSymbol], minedUnits);
 	
 			Logger.info(`Ship symbol ${shipSymbol} finished an automated mining loop. Waiting for cooldown to resume.`);
 	
-			// Wait cooldown
+			// Wait for cooldown
 			await sleep(cooldown);
 		}
 		Logger.debug(`Stopped mining operation for ship ${shipSymbol}`);

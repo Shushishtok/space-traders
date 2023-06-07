@@ -14,8 +14,7 @@
     "openapi-generator",
     "spacetraders-sdk"
   ],
-  "license": "Unlicense",
-  "main": "./dist/index.js",
+  "license": "Unlicense",  
   "typings": "./dist/index.d.ts",
   "module": "./dist/esm/index.js",
   "sideEffects": false,

@@ -3,7 +3,7 @@ import * as Systems from '../requests/system';
 import * as CustomRequests from '../requests/custom-requests';
 import { sendResultResponse, validateMissingParameters, validatePagination } from '../utils';
 import { SystemRequest, Waypoint, Waypoints } from "../interfaces/systems";
-import { ShipSymbol } from '../interfaces/ships';
+import { ShipSymbols } from '../interfaces/ships';
 import { PaginatedRequest } from '../interfaces/pagination';
 
 export const systemsRouter = Router();
@@ -42,10 +42,10 @@ systemsRouter.get("/market", async (req, res) => {
 });
 
 systemsRouter.get("/market/ship", async (req, res) => {
-	const { shipSymbol }: ShipSymbol = req.body;
-	validateMissingParameters({ shipSymbol });	
+	const { shipSymbols }: ShipSymbols = req.body;
+	validateMissingParameters({ shipSymbols });		
 
-	const result = await CustomRequests.getMarketAtShipsLocation(shipSymbol);
+	const result = await CustomRequests.getMarketAtShipsLocation(shipSymbols);
 	sendResultResponse(res, result);
 });
 
